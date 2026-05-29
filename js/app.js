@@ -928,9 +928,33 @@ function syncInBackground() {
 
 // ── EVENT BINDING ──────────────────────────────────────────────────────────
 function bindEvents() {
+  // ── Mobile hamburger menu ──
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = $('sidebar-backdrop');
+  const hamburger = $('hamburger-btn');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    backdrop.classList.add('active');
+    hamburger.style.opacity = '0';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('active');
+    hamburger.style.opacity = '';
+  }
+
+  hamburger.addEventListener('click', openSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
   // Navigation
   document.querySelectorAll('.nav-link').forEach(l =>
-    l.addEventListener('click', e => { e.preventDefault(); navigate(l.dataset.view); })
+    l.addEventListener('click', e => {
+      e.preventDefault();
+      navigate(l.dataset.view);
+      // Close mobile sidebar after navigation
+      if (window.innerWidth <= 640) closeSidebar();
+    })
   );
 
   // Dashboard
