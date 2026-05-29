@@ -1,5 +1,5 @@
 // VocabMaster Service Worker — enables offline access & PWA install
-const CACHE_NAME = 'vocabmaster-v1';
+const CACHE_NAME = 'vocabmaster-v2';
 const ASSETS = [
   './',
   'index.html',
