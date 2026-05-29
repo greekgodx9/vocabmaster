@@ -261,25 +261,46 @@ async function handleGenerateArticle() {
 // ── WORD TOOLTIP ───────────────────────────────────────────────────────────
 let _ttHideTimer = null;
 
+function hideTooltip() {
+  const tt = $('word-tooltip');
+  tt.classList.remove('tt-visible');
+  _ttHideTimer = setTimeout(() => {
+    if (!tt.classList.contains('tt-visible')) tt.style.display = 'none';
+  }, 150);
+}
+
 function setupArticleTooltip() {
   const body = $('article-body');
   // Remove previous listeners by cloning (simple reset)
   const fresh = body.cloneNode(true);
   body.parentNode.replaceChild(fresh, body);
 
+  // Desktop: hover to show
   fresh.addEventListener('mouseover', e => {
     const mark = e.target.closest('mark');
     if (!mark) return;
     clearTimeout(_ttHideTimer);
     renderWordTooltip(mark);
   });
+  fresh.addEventListener('mouseleave', hideTooltip);
 
-  fresh.addEventListener('mouseleave', () => {
-    _ttHideTimer = setTimeout(() => {
-      const tt = $('word-tooltip');
-      tt.classList.remove('tt-visible');
-      setTimeout(() => { if (!tt.classList.contains('tt-visible')) tt.style.display = 'none'; }, 150);
-    }, 100);
+  // Mobile: tap to show, tap elsewhere to hide
+  fresh.addEventListener('click', e => {
+    const mark = e.target.closest('mark');
+    if (mark) {
+      clearTimeout(_ttHideTimer);
+      renderWordTooltip(mark);
+      e.stopPropagation();
+    }
+  });
+
+  // Click anywhere outside the tooltip → dismiss
+  document.addEventListener('click', e => {
+    const tt = $('word-tooltip');
+    if (!tt.classList.contains('tt-visible')) return;
+    // Don't hide if clicking inside the tooltip or on a mark
+    if (tt.contains(e.target) || e.target.closest('mark')) return;
+    hideTooltip();
   });
 }
 
