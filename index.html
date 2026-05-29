@@ -158,8 +158,12 @@
         <h1>Generate Article</h1>
       </div>
       <div class="article-layout">
-        <div class="article-config section-card">
-          <h2>Settings</h2>
+        <div class="article-config section-card" id="article-config-panel">
+          <div class="config-header" id="config-header-toggle">
+            <h2>Settings</h2>
+            <button class="btn-collapse-config" id="btn-collapse-config" title="Hide settings">&#9650;</button>
+          </div>
+          <div id="config-body">
           <div class="form-group">
             <label>Words to Include</label>
             <div class="word-selection-actions">
@@ -194,6 +198,7 @@
             </select>
           </div>
           <button class="btn-primary btn-full" id="btn-generate-article">&#10024; Generate Article</button>
+          </div><!-- end config-body -->
         </div>
 
         <div class="article-display section-card">
@@ -531,11 +536,16 @@
             <h3 style="margin:0;font-size:15px;color:var(--primary)">&#9729; Cloud Sync</h3>
           </div>
           <div style="padding:14px 18px">
-            <p class="hint" style="margin-bottom:12px">Enter the <strong>same passphrase</strong> on both devices — data syncs automatically.</p>
+            <p class="hint" style="margin-bottom:12px">Set a <strong>Sync ID + Passphrase</strong> on all your devices — they will stay in sync.</p>
             <div class="form-group">
-              <label>Sync Passphrase</label>
-              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase (e.g. my-vocab-2024)">
-              <p class="hint">Same passphrase on PC and iPhone = same data. Different per person.</p>
+              <label>Sync ID（用户名）</label>
+              <input type="text" id="settings-sync-id" placeholder="Pick a unique ID (e.g. alex-vocab)" autocomplete="off">
+              <p class="hint">像用户名一样。不同的人用不同的 Sync ID，数据就不会串。</p>
+            </div>
+            <div class="form-group">
+              <label>Sync Passphrase（密码）</label>
+              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase">
+              <p class="hint">同一个人所有设备上：<strong>Sync ID 和 Passphrase 都要完全相同</strong>。</p>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
               <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Sync Now</button>

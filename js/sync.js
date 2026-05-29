@@ -5,11 +5,12 @@ const Sync = {
   // ── Configuration ──────────────────────────────────────────────────────
   _getConfig() {
     const s = Storage.getSettings();
+    const syncId = s.syncId || '';
     const passphrase = s.syncPassphrase || '';
     return {
-      passphrase,
+      syncId, passphrase,
       apiUrl: '/.netlify/functions/sync',   // same domain, always accessible
-      get enabled() { return !!this.passphrase; },
+      get enabled() { return !!(this.syncId && this.passphrase); },
     };
   },
 
@@ -21,7 +22,7 @@ const Sync = {
     const res = await fetch(cfg.apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, passphrase: cfg.passphrase, data }),
+      body: JSON.stringify({ action, syncId: cfg.syncId, passphrase: cfg.passphrase, data }),
     });
 
     if (!res.ok) {
@@ -94,7 +95,7 @@ const Sync = {
     // Settings: merge preferences; keep local credentials
     const remoteSettings = remote.settings || {};
     const protectedKeys = ['apiKey', 'apiProvider', 'apiModel', 'customUrl',
-      'supabaseUrl', 'supabaseKey', 'syncPassphrase'];
+      'syncId', 'syncPassphrase'];
     for (const k of protectedKeys) delete remoteSettings[k];
     Storage.saveSettings({ ...remoteSettings, ...Storage.getSettings() });
 

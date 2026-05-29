@@ -243,6 +243,10 @@ async function handleGenerateArticle() {
 
     $('article-loading').style.display = 'none';
     $('article-content').style.display = '';
+    // Auto-collapse config panel on mobile after generation
+    if (window.innerWidth <= 900) {
+      $('article-config-panel').classList.add('collapsed');
+    }
     TTS.stop();
     updateTTSButtons(false, false);
     setupArticleTooltip();
@@ -877,6 +881,7 @@ function openSettings() {
   $('settings-custom-url').value = s.customUrl || '';
   $('settings-daily-goal').value = s.dailyGoal || 20;
   // Sync fields
+  $('settings-sync-id').value         = s.syncId || '';
   $('settings-sync-passphrase').value = s.syncPassphrase || '';
   updateSyncStatus();
   updateProviderUI(p);
@@ -892,6 +897,7 @@ function saveSettings() {
     apiModel:    $('settings-model').value.trim() || cfg.defaultModel || '',
     customUrl:   $('settings-custom-url').value.trim(),
     dailyGoal:   parseInt($('settings-daily-goal').value) || 20,
+    syncId:         $('settings-sync-id').value.trim(),
     syncPassphrase: $('settings-sync-passphrase').value.trim(),
   });
   closeSettings();
@@ -904,8 +910,8 @@ function updateSyncStatus() {
   const el = $('sync-status');
   if (!el) return;
   const s = Storage.getSettings();
-  if (!s.syncPassphrase) {
-    el.textContent = 'Set a passphrase above then Save';
+  if (!s.syncId || !s.syncPassphrase) {
+    el.textContent = 'Set Sync ID + Passphrase then Save';
     el.style.color = 'var(--text-muted)';
     return;
   }
@@ -1004,6 +1010,10 @@ function bindEvents() {
     selectArticleWords(ids);
   });
   $('btn-generate-article').addEventListener('click', handleGenerateArticle);
+  // Collapse config panel toggle (mobile)
+  $('btn-collapse-config').addEventListener('click', () => {
+    $('article-config-panel').classList.toggle('collapsed');
+  });
 
   // TTS
   $('tts-play').addEventListener('click', () => {
@@ -1269,12 +1279,14 @@ function bindEvents() {
   // Settings — Cloud Sync, Supabase key toggle
   $('btn-sync-now').addEventListener('click', async () => {
     const btn = $('btn-sync-now');
+    const syncId = $('settings-sync-id').value.trim();
     const passphrase = $('settings-sync-passphrase').value.trim();
+    if (!syncId) { toast('Set a Sync ID (username) first', 'error'); return; }
     if (!passphrase) { toast('Set a passphrase first', 'error'); return; }
     btn.disabled = true;
     btn.textContent = '⏳ Syncing...';
-    // Save passphrase
-    Storage.saveSettings({ syncPassphrase: passphrase });
+    // Save sync credentials
+    Storage.saveSettings({ syncId, syncPassphrase: passphrase });
     try {
       const result = await Sync.sync();
       if (result.pulled && result.pushed) toast('Synced: pulled & pushed ✓', 'success');

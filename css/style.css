@@ -726,6 +726,33 @@ textarea:focus { border-color: var(--primary); }
 .spell-result-skip .spell-result-badge    { background: var(--border); color: var(--text-muted); }
 .spell-result-answer { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
+/* ===== ARTICLE CONFIG COLLAPSIBLE ===== */
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.config-header h2 { margin: 0; }
+.btn-collapse-config {
+  display: none;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.btn-collapse-config:hover { background: var(--bg); }
+
+@media (max-width: 900px) {
+  .btn-collapse-config { display: flex; }
+  .article-config.collapsed #config-body { display: none; }
+  .article-config.collapsed .btn-collapse-config { transform: rotate(180deg); }
+}
+
 /* ===== LOCAL SYNC BUTTONS ===== */
 .btn-sync-local {
   flex: 1;

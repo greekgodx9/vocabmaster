@@ -2,8 +2,8 @@
 // Client calls this from China → Netlify proxies to GitHub API (server-side)
 const crypto = require('crypto');
 
-function hashPassphrase(passphrase) {
-  return crypto.createHash('sha256').update('vocabmaster:' + passphrase).digest('hex').slice(0, 32);
+function hashSyncKey(syncId, passphrase) {
+  return crypto.createHash('sha256').update('vocabmaster:' + (syncId || '') + ':' + passphrase).digest('hex').slice(0, 32);
 }
 
 async function findGist(description, token) {
@@ -100,13 +100,16 @@ exports.handler = async (event) => {
 
   try {
     const body = event.body ? JSON.parse(event.body) : {};
-    const { passphrase, action, data } = body;
+    const { syncId, passphrase, action, data } = body;
 
+    if (!syncId || syncId.length < 2) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Sync ID required (min 2 chars) — like a username' }) };
+    }
     if (!passphrase || passphrase.length < 3) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Passphrase required (min 3 chars)' }) };
     }
 
-    const hash = hashPassphrase(passphrase);
+    const hash = hashSyncKey(syncId, passphrase);
     const description = `vocabmaster-sync:${hash}`;
 
     if (action === 'pull') {
