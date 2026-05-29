@@ -1389,4 +1389,3 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
-// auto-deploy test
