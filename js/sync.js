@@ -3,12 +3,22 @@
 const Sync = {
 
   // ── Configuration ──────────────────────────────────────────────────────
+  // Default Supabase project (shared across all users of this app)
+  // The anon key is PUBLIC by design — safe to embed in frontend code.
+  // Each user's data is isolated by their unique passphrase hash.
+  DEFAULTS: {
+    url: 'https://zbckefqrpryosbzblemog.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpiY2tlZnFycHlvc2J6YmxlbW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNTY5MDMsImV4cCI6MjA5NTYzMjkwM30.Rr7dKoClB2eqKY2IkeIUdxKLYkWddbuzStHJ0M6jggM',
+  },
+
   _getConfig() {
     const s = Storage.getSettings();
+    // User settings override defaults (blank = use default)
+    const url = (s.supabaseUrl || this.DEFAULTS.url).replace(/\/+$/, '');
+    const key = s.supabaseKey || this.DEFAULTS.key;
+    const passphrase = s.syncPassphrase || '';
     return {
-      url: (s.supabaseUrl || '').replace(/\/+$/, ''),
-      key: s.supabaseKey || '',
-      passphrase: s.syncPassphrase || '',
+      url, key, passphrase,
       get enabled() {
         return !!(this.url && this.key && this.passphrase);
       },

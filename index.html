@@ -500,30 +500,34 @@
             <span id="sync-toggle-icon" style="font-size:18px;color:var(--text-muted);transition:transform .2s">&#9660;</span>
           </div>
           <div id="sync-body" style="display:none;margin-top:12px">
-            <p class="hint" style="margin-bottom:12px">Sync your vocabulary data between PC and iPhone via Supabase (free). <a href="https://supabase.com" target="_blank" style="color:var(--primary)">Create a free account →</a></p>
+            <p class="hint" style="margin-bottom:12px">Sync your vocabulary data between PC and iPhone. <strong>Already configured</strong> — just set a passphrase!</p>
             <div class="form-group">
-              <label>Supabase Project URL</label>
-              <input type="text" id="settings-supabase-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
-              <p class="hint">From your Supabase project: Settings → API → Project URL</p>
-            </div>
-            <div class="form-group">
-              <label>Supabase Anon Key</label>
-              <div class="api-key-wrap">
-                <input type="password" id="settings-supabase-key" placeholder="Paste your anon/public key">
-                <button class="btn-text" id="btn-toggle-supabase-key">Show</button>
-              </div>
-              <p class="hint">From: Settings → API → Project API keys → <code>anon public</code></p>
-            </div>
-            <div class="form-group">
-              <label>Sync Passphrase</label>
-              <input type="password" id="settings-sync-passphrase" placeholder="Create a shared passphrase (e.g. my-vocab-secret)">
-              <p class="hint">Same passphrase on all devices = same data. Keep it private.</p>
+              <label>Sync Passphrase ⚠️ Required</label>
+              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase (e.g. my-vocab-2024)">
+              <p class="hint"><strong>Same passphrase on all your devices</strong> = same data. Each person should use a <em>different</em> passphrase to keep their data separate.</p>
             </div>
             <div class="sync-actions" style="display:flex;gap:10px;align-items:center;margin-top:4px">
               <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Sync Now</button>
               <span id="sync-status" style="font-size:12px;color:var(--text-muted)"></span>
             </div>
-            <p class="hint" style="margin-top:8px">After saving settings, run the SQL in <code>supabase-schema.sql</code> on your Supabase project.</p>
+            <details style="margin-top:12px">
+              <summary style="font-size:12px;color:var(--text-muted);cursor:pointer">Advanced: use your own Supabase project</summary>
+              <div style="margin-top:8px">
+                <div class="form-group">
+                  <label>Supabase Project URL</label>
+                  <input type="text" id="settings-supabase-url" placeholder="Leave blank for default">
+                  <p class="hint">Default: a shared project is already configured.</p>
+                </div>
+                <div class="form-group">
+                  <label>Supabase Anon Key</label>
+                  <div class="api-key-wrap">
+                    <input type="password" id="settings-supabase-key" placeholder="Leave blank for default">
+                    <button class="btn-text" id="btn-toggle-supabase-key">Show</button>
+                  </div>
+                  <p class="hint">Default key is already set — only change if using your own project.</p>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
 

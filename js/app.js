@@ -908,12 +908,12 @@ function updateSyncStatus() {
   const el = $('sync-status');
   if (!el) return;
   const s = Storage.getSettings();
-  if (!s.supabaseUrl || !s.supabaseKey || !s.syncPassphrase) {
-    el.textContent = 'Configure above then Save';
+  if (!s.syncPassphrase) {
+    el.textContent = 'Set a passphrase above then Save';
     el.style.color = 'var(--text-muted)';
     return;
   }
-  el.textContent = 'Configured ✓';
+  el.textContent = 'Ready — click Sync Now ✓';
   el.style.color = '#22c55e';
 }
 
