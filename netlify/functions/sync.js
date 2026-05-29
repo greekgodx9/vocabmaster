@@ -22,6 +22,23 @@ async function findGist(description, token) {
   return gists.find(g => g.description === description) || null;
 }
 
+// Fetch a single gist by ID — the list API doesn't return file CONTENT,
+// so we must call this to get the actual data.
+async function getGist(gistId, token) {
+  const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'VocabMaster-Sync/1.0',
+    },
+  });
+  if (!res.ok) {
+    console.error('GitHub get error:', res.status);
+    return null;
+  }
+  return res.json();
+}
+
 async function createGist(description, data, token) {
   const res = await fetch('https://api.github.com/gists', {
     method: 'POST',
@@ -93,7 +110,12 @@ exports.handler = async (event) => {
     const description = `vocabmaster-sync:${hash}`;
 
     if (action === 'pull') {
-      const gist = await findGist(description, GITHUB_TOKEN);
+      const gistMeta = await findGist(description, GITHUB_TOKEN);
+      if (!gistMeta) {
+        return { statusCode: 200, headers, body: JSON.stringify({ data: null, exists: false }) };
+      }
+      // MUST fetch full gist by ID — list API doesn't include file content
+      const gist = await getGist(gistMeta.id, GITHUB_TOKEN);
       if (!gist) {
         return { statusCode: 200, headers, body: JSON.stringify({ data: null, exists: false }) };
       }
