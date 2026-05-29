@@ -908,15 +908,18 @@ function saveSettings() {
 // ── SYNC HELPERS ──────────────────────────────────────────────────────────
 function updateSyncStatus() {
   const el = $('sync-status');
+  const badge = $('account-badge');
   if (!el) return;
   const s = Storage.getSettings();
   if (!s.syncId || !s.syncPassphrase) {
-    el.textContent = 'Set Sync ID + Passphrase then Save';
+    el.textContent = 'Enter username & password to log in';
     el.style.color = 'var(--text-muted)';
+    if (badge) { badge.textContent = 'Not logged in'; badge.style.background = '#f1f5f9'; badge.style.color = 'var(--text-muted)'; }
     return;
   }
-  el.textContent = 'Ready — click Sync Now ✓';
+  el.textContent = 'Ready — tap to sync ✓';
   el.style.color = '#22c55e';
+  if (badge) { badge.textContent = '✓ ' + s.syncId; badge.style.background = '#dcfce7'; badge.style.color = '#15803d'; }
 }
 
 // Silently push local changes to sync server (debounced)
@@ -1281,8 +1284,8 @@ function bindEvents() {
     const btn = $('btn-sync-now');
     const syncId = $('settings-sync-id').value.trim();
     const passphrase = $('settings-sync-passphrase').value.trim();
-    if (!syncId) { toast('Set a Sync ID (username) first', 'error'); return; }
-    if (!passphrase) { toast('Set a passphrase first', 'error'); return; }
+    if (!syncId) { toast('Enter a username first', 'error'); return; }
+    if (!passphrase) { toast('Enter a password first', 'error'); return; }
     btn.disabled = true;
     btn.textContent = '⏳ Syncing...';
     // Save sync credentials

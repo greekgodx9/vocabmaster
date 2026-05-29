@@ -530,27 +530,29 @@
         <!-- Hidden file input for import -->
         <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
 
-        <!-- ===== CLOUD SYNC ===== -->
+        <!-- ===== ACCOUNT ===== -->
         <div class="sync-section" style="margin-bottom:20px">
           <div class="sync-header" style="display:flex;align-items:center;justify-content:space-between;">
-            <h3 style="margin:0;font-size:15px;color:var(--primary)">&#9729; Cloud Sync</h3>
+            <h3 style="margin:0;font-size:15px;color:var(--primary)">&#128100; Account</h3>
+            <span id="account-badge" style="font-size:11px;padding:3px 10px;border-radius:12px;background:#f1f5f9;color:var(--text-muted)">Not logged in</span>
           </div>
           <div style="padding:14px 18px">
-            <p class="hint" style="margin-bottom:12px">Set a <strong>Sync ID + Passphrase</strong> on all your devices — they will stay in sync.</p>
+            <p class="hint" style="margin-bottom:14px">Log in with the <strong>same username and password</strong> on all your devices to keep them automatically in sync.</p>
             <div class="form-group">
-              <label>Sync ID（用户名）</label>
-              <input type="text" id="settings-sync-id" placeholder="Pick a unique ID (e.g. alex-vocab)" autocomplete="off">
-              <p class="hint">像用户名一样。不同的人用不同的 Sync ID，数据就不会串。</p>
+              <label>Username</label>
+              <input type="text" id="settings-sync-id" placeholder="Choose a username (e.g. alex)" autocomplete="off">
+              <p class="hint">Pick something unique to you — this separates your data from everyone else's.</p>
             </div>
             <div class="form-group">
-              <label>Sync Passphrase（密码）</label>
-              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase">
-              <p class="hint">同一个人所有设备上：<strong>Sync ID 和 Passphrase 都要完全相同</strong>。</p>
+              <label>Password</label>
+              <input type="password" id="settings-sync-passphrase" placeholder="Choose a password">
+              <p class="hint">Use the <strong>same username + password</strong> on your PC, iPhone, and iPad.</p>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
-              <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Sync Now</button>
+              <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Log In & Sync</button>
               <span id="sync-status" style="font-size:12px;color:var(--text-muted)"></span>
             </div>
+            <p class="hint" style="margin-top:10px">No registration required — your username + password <em>are</em> your account. They stay on your device and are never sent anywhere except to sync your own data.</p>
           </div>
         </div>
 
