@@ -1116,11 +1116,15 @@ function bindEvents() {
     inp.type = inp.type === 'password' ? 'text' : 'password';
     $('btn-toggle-key').textContent = inp.type === 'password' ? 'Show' : 'Hide';
   });
-  $('btn-toggle-supabase-key').addEventListener('click', () => {
-    const inp = $('settings-supabase-key');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-    $('btn-toggle-supabase-key').textContent = inp.type === 'password' ? 'Show' : 'Hide';
-  });
+  // Supabase key toggle (may not exist in simplified settings)
+  const supabaseKeyToggle = $('btn-toggle-supabase-key');
+  if (supabaseKeyToggle) {
+    supabaseKeyToggle.addEventListener('click', () => {
+      const inp = $('settings-supabase-key');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      supabaseKeyToggle.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+    });
+  }
 
   // Sync section toggle — removed (always visible now)
 
@@ -1250,13 +1254,16 @@ function bindEvents() {
     btn.textContent = '🔄 Sync Now';
     btn.disabled = false;
   });
-  $('btn-export').addEventListener('click', () => {
-    const data = JSON.stringify(Storage.exportAll(), null, 2);
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
-    a.download = `vocabmaster-${new Date().toISOString().slice(0,10)}.json`;
-    a.click(); URL.revokeObjectURL(a.href);
-  });
+  const btnExport = $('btn-export');
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      const data = JSON.stringify(Storage.exportAll(), null, 2);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      a.download = `vocabmaster-${new Date().toISOString().slice(0,10)}.json`;
+      a.click(); URL.revokeObjectURL(a.href);
+    });
+  }
   $('btn-clear-data').addEventListener('click', () => {
     if (confirm('Delete ALL data? This cannot be undone.')) {
       Storage.clearAll(); closeSettings(); navigate('dashboard'); toast('All data cleared');
