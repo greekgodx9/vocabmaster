@@ -525,35 +525,24 @@
         <!-- Hidden file input for import -->
         <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
 
-        <!-- ===== CLOUD SYNC (Optional — needs internet) ===== -->
-        <details style="margin-bottom:20px">
-          <summary style="font-size:13px;color:var(--text-muted);cursor:pointer;padding:4px 0">🌐 Cloud Sync (optional — requires internet access to Supabase)</summary>
-          <div style="margin-top:10px">
-            <p class="hint" style="margin-bottom:12px">Auto-sync between devices via Supabase. May not work in China without VPN.</p>
+        <!-- ===== CLOUD SYNC ===== -->
+        <div class="sync-section" style="margin-bottom:20px">
+          <div class="sync-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="margin:0;font-size:15px;color:var(--primary)">&#9729; Cloud Sync</h3>
+          </div>
+          <div style="padding:14px 18px">
+            <p class="hint" style="margin-bottom:12px">Enter the <strong>same passphrase</strong> on both devices — data syncs automatically.</p>
             <div class="form-group">
               <label>Sync Passphrase</label>
-              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase">
-              <p class="hint">Same passphrase on all devices. Different per person.</p>
+              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase (e.g. my-vocab-2024)">
+              <p class="hint">Same passphrase on PC and iPhone = same data. Different per person.</p>
             </div>
             <div style="display:flex;gap:10px;align-items:center">
               <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Sync Now</button>
               <span id="sync-status" style="font-size:12px;color:var(--text-muted)"></span>
             </div>
-            <details style="margin-top:10px">
-              <summary style="font-size:11px;color:var(--text-muted);cursor:pointer">Advanced: custom Supabase project</summary>
-              <div style="margin-top:8px">
-                <div class="form-group">
-                  <label>Supabase Project URL</label>
-                  <input type="text" id="settings-supabase-url" placeholder="Leave blank for default">
-                </div>
-                <div class="form-group">
-                  <label>Supabase Anon Key</label>
-                  <input type="password" id="settings-supabase-key" placeholder="Leave blank for default">
-                </div>
-              </div>
-            </details>
           </div>
-        </details>
+        </div>
 
         <div class="form-group">
           <label>Daily Review Goal</label>

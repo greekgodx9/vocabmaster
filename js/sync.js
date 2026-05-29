@@ -1,133 +1,62 @@
-// Sync module — cross-device sync via Supabase
-// Uses Supabase REST API directly (no SDK), lightweight fetch-based client.
+// Sync module — cross-device cloud sync via Netlify Function + GitHub Gist
+// Client → Netlify Function (same domain, works in China) → GitHub API (server-side)
 const Sync = {
 
   // ── Configuration ──────────────────────────────────────────────────────
-  // Default Supabase project (shared across all users of this app)
-  // The anon key is PUBLIC by design — safe to embed in frontend code.
-  // Each user's data is isolated by their unique passphrase hash.
-  DEFAULTS: {
-    url: 'https://zbckefqrpryosbzblemog.supabase.co',
-    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpiY2tlZnFycHlvc2J6YmxlbW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNTY5MDMsImV4cCI6MjA5NTYzMjkwM30.Rr7dKoClB2eqKY2IkeIUdxKLYkWddbuzStHJ0M6jggM',
-  },
-
   _getConfig() {
     const s = Storage.getSettings();
-    // User settings override defaults (blank = use default)
-    const url = (s.supabaseUrl || this.DEFAULTS.url).replace(/\/+$/, '');
-    const key = s.supabaseKey || this.DEFAULTS.key;
     const passphrase = s.syncPassphrase || '';
     return {
-      url, key, passphrase,
-      get enabled() {
-        return !!(this.url && this.key && this.passphrase);
-      },
+      passphrase,
+      apiUrl: '/.netlify/functions/sync',   // same domain, always accessible
+      get enabled() { return !!this.passphrase; },
     };
   },
 
-  // ── Crypto: hash passphrase → deterministic 32-char hex row ID ────────
-  async _rowId(passphrase) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode('vocabmaster:' + (passphrase || ''));
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('')
-      .slice(0, 32);
-  },
-
-  // ── Device ID (persistent per device) ──────────────────────────────────
-  _deviceId() {
-    let id = localStorage.getItem('vm_device_id');
-    if (!id) {
-      id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
-      localStorage.setItem('vm_device_id', id);
-    }
-    return id;
-  },
-
-  // ── Low-level API call ─────────────────────────────────────────────────
-  async _api(method, path, body) {
+  // ── API call ───────────────────────────────────────────────────────────
+  async _api(action, data) {
     const cfg = this._getConfig();
-    if (!cfg.enabled) throw new Error('Sync not configured — set URL, Key, and Passphrase in Settings');
+    if (!cfg.enabled) throw new Error('Sync passphrase not set');
 
-    const headers = {
-      'apikey': cfg.key,
-      'Authorization': `Bearer ${cfg.key}`,
-      'Content-Type': 'application/json',
-    };
-
-    if (method === 'POST' || method === 'PATCH') {
-      headers['Prefer'] = 'return=representation';
-    }
-
-    const res = await fetch(`${cfg.url}/rest/v1${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
+    const res = await fetch(cfg.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, passphrase: cfg.passphrase, data }),
     });
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      if (res.status === 404) return []; // table doesn't exist yet
-      throw new Error(`Sync ${res.status}: ${text.slice(0, 200)}`);
+      throw new Error(`Sync server error ${res.status}: ${text.slice(0, 200)}`);
     }
 
-    const json = await res.json();
-    return json || [];
+    return res.json();
   },
 
-  // ── Push: upload local data to server ──────────────────────────────────
+  // ── Push local data to cloud ───────────────────────────────────────────
   async push() {
-    const cfg = this._getConfig();
-    if (!cfg.enabled) throw new Error('Sync not configured');
-
-    const rowId = await this._rowId(cfg.passphrase);
     const payload = Storage.exportAll();
     payload._deviceId = this._deviceId();
     payload._pushedAt = new Date().toISOString();
 
-    // Try PATCH first (update existing row), then POST (insert new)
-    const res = await this._api('PATCH', `/vocabmaster_sync?id=eq.${rowId}`, {
-      id: rowId,
-      sync_code_hash: rowId,
-      payload: payload,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (Array.isArray(res) && res.length === 0) {
-      // Row doesn't exist yet — create it
-      await this._api('POST', '/vocabmaster_sync', {
-        id: rowId,
-        sync_code_hash: rowId,
-        payload: payload,
-        updated_at: new Date().toISOString(),
-      });
-    }
-
+    const result = await this._api('push', payload);
     Storage.saveSettings({ _lastSyncPushedAt: new Date().toISOString() });
-    return true;
+    return result;
   },
 
-  // ── Pull: download remote data ─────────────────────────────────────────
+  // ── Pull remote data from cloud ────────────────────────────────────────
   async pull() {
-    const cfg = this._getConfig();
-    if (!cfg.enabled) throw new Error('Sync not configured');
-
-    const rowId = await this._rowId(cfg.passphrase);
-    const rows = await this._api('GET', `/vocabmaster_sync?id=eq.${rowId}&select=payload`);
-
-    if (!rows || !rows.length) return null;
-    return rows[0].payload;
+    const result = await this._api('pull');
+    if (!result.exists || !result.data) return null;
+    return result.data;
   },
 
-  // ── Smart merge: combine local + remote without losing data ────────────
+  // ── Smart merge: combine local + remote, keep best version ────────────
   _mergeInto(remote) {
     if (!remote || !remote.words) return;
 
     const local = Storage.exportAll();
 
-    // ── Words: merge by ID, keep the one with later dateAdded ──
+    // Words: merge by ID, keep the one with more review progress
     const wordMap = new Map();
     for (const w of local.words || []) wordMap.set(w.id, w);
     for (const w of remote.words || []) {
@@ -135,11 +64,9 @@ const Sync = {
       if (!existing) {
         wordMap.set(w.id, w);
       } else {
-        // Keep the version with the most review progress
         const existProg = (existing.sm2?.repetitions || 0) + (existing.sm2?.interval || 0);
         const remoteProg = (w.sm2?.repetitions || 0) + (w.sm2?.interval || 0);
         if (remoteProg > existProg) wordMap.set(w.id, w);
-        // Also merge richMeanings if local was missing them
         if (w.richMeanings && (!existing.richMeanings || existing.richMeanings.length === 0)) {
           existing.richMeanings = w.richMeanings;
           existing.phonetic = existing.phonetic || w.phonetic;
@@ -150,64 +77,48 @@ const Sync = {
     }
     Storage.saveWords([...wordMap.values()]);
 
-    // ── Check-ins: union ──
+    // Check-ins: union
     const checkInSet = new Set([...(local.checkIns || []), ...(remote.checkIns || [])]);
     localStorage.setItem('vm_checkins', JSON.stringify([...checkInSet].sort()));
 
-    // ── Word books: merge by ID, keep most updated ──
+    // Word books: merge by ID, keep most progressed
     const bookMap = new Map();
     for (const b of local.wordBooks || []) bookMap.set(b.id, b);
     for (const b of remote.wordBooks || []) {
       const existing = bookMap.get(b.id);
-      if (!existing) {
-        bookMap.set(b.id, b);
-      } else {
-        const existVer = (existing.releasedCount || 0) + (existing.active ? 1 : 0);
-        const remoteVer = (b.releasedCount || 0) + (b.active ? 1 : 0);
-        if (remoteVer > existVer) bookMap.set(b.id, b);
-      }
+      if (!existing) { bookMap.set(b.id, b); }
+      else if ((b.releasedCount || 0) > (existing.releasedCount || 0)) { bookMap.set(b.id, b); }
     }
     Storage.saveWordBooks([...bookMap.values()]);
 
-    // ── Settings: local credentials win, remote preferences merge ──
+    // Settings: merge preferences; keep local credentials
     const remoteSettings = remote.settings || {};
-    const localSettings = local.settings || {};
-    // Never overwrite these from remote
     const protectedKeys = ['apiKey', 'apiProvider', 'apiModel', 'customUrl',
       'supabaseUrl', 'supabaseKey', 'syncPassphrase'];
-    for (const k of protectedKeys) {
-      delete remoteSettings[k];
-    }
-    // Merge: remote provides defaults, local overrides
-    const merged = { ...remoteSettings, ...localSettings };
-    Storage.saveSettings(merged);
+    for (const k of protectedKeys) delete remoteSettings[k];
+    Storage.saveSettings({ ...remoteSettings, ...Storage.getSettings() });
 
     Storage.saveSettings({ _lastSyncPulledAt: new Date().toISOString() });
   },
 
-  // ── Full sync cycle ────────────────────────────────────────────────────
+  // ── Full sync cycle: pull → merge → push ──────────────────────────────
   async sync() {
     const cfg = this._getConfig();
     if (!cfg.enabled) {
-      console.log('[Sync] Not configured, skipping');
+      console.log('[Sync] No passphrase, skipping');
       return { pulled: false, pushed: false };
     }
 
     let pulled = false, pushed = false;
 
     try {
-      // 1. Pull remote and merge
       const remote = await this.pull();
-      if (remote) {
-        this._mergeInto(remote);
-        pulled = true;
-      }
+      if (remote) { this._mergeInto(remote); pulled = true; }
     } catch (err) {
       console.warn('[Sync] Pull failed:', err.message);
     }
 
     try {
-      // 2. Push local to remote
       await this.push();
       pushed = true;
     } catch (err) {
@@ -217,27 +128,26 @@ const Sync = {
     return { pulled, pushed };
   },
 
-  // ── Quick status check ─────────────────────────────────────────────────
+  // ── Device ID ──────────────────────────────────────────────────────────
+  _deviceId() {
+    let id = localStorage.getItem('vm_device_id');
+    if (!id) {
+      id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+      localStorage.setItem('vm_device_id', id);
+    }
+    return id;
+  },
+
+  // ── Quick status ───────────────────────────────────────────────────────
   async status() {
     const cfg = this._getConfig();
     if (!cfg.enabled) return { configured: false };
-
     try {
-      const rowId = await this._rowId(cfg.passphrase);
-      const rows = await this._api('GET', `/vocabmaster_sync?id=eq.${rowId}&select=updated_at,payload`);
-      if (!rows || !rows.length) {
-        return { configured: true, remoteExists: false };
-      }
-      const r = rows[0];
-      const remoteDevice = r.payload?._deviceId || 'unknown';
-      const remotePushedAt = r.payload?._pushedAt || null;
+      const result = await this._api('pull');
       return {
         configured: true,
-        remoteExists: true,
-        updatedAt: r.updated_at,
-        remoteDeviceId: remoteDevice,
-        isOwnPush: remoteDevice === this._deviceId(),
-        remotePushedAt: remotePushedAt,
+        remoteExists: result.exists,
+        updatedAt: result.updatedAt || null,
       };
     } catch {
       return { configured: true, remoteExists: false, error: true };

@@ -877,8 +877,6 @@ function openSettings() {
   $('settings-custom-url').value = s.customUrl || '';
   $('settings-daily-goal').value = s.dailyGoal || 20;
   // Sync fields
-  $('settings-supabase-url').value    = s.supabaseUrl || '';
-  $('settings-supabase-key').value    = s.supabaseKey || '';
   $('settings-sync-passphrase').value = s.syncPassphrase || '';
   updateSyncStatus();
   updateProviderUI(p);
@@ -894,8 +892,6 @@ function saveSettings() {
     apiModel:    $('settings-model').value.trim() || cfg.defaultModel || '',
     customUrl:   $('settings-custom-url').value.trim(),
     dailyGoal:   parseInt($('settings-daily-goal').value) || 20,
-    supabaseUrl:    $('settings-supabase-url').value.trim(),
-    supabaseKey:    $('settings-supabase-key').value.trim(),
     syncPassphrase: $('settings-sync-passphrase').value.trim(),
   });
   closeSettings();
@@ -1273,27 +1269,18 @@ function bindEvents() {
   // Settings — Cloud Sync, Supabase key toggle
   $('btn-sync-now').addEventListener('click', async () => {
     const btn = $('btn-sync-now');
+    const passphrase = $('settings-sync-passphrase').value.trim();
+    if (!passphrase) { toast('Set a passphrase first', 'error'); return; }
     btn.disabled = true;
     btn.textContent = '⏳ Syncing...';
+    // Save passphrase
+    Storage.saveSettings({ syncPassphrase: passphrase });
     try {
-      // Save settings first (so sync has latest config)
-      const p = $('settings-provider').value;
-      const cfg = API.PROVIDERS[p] || {};
-      Storage.saveSettings({
-        apiProvider: p,
-        apiKey: $('settings-api-key').value.trim(),
-        apiModel: $('settings-model').value.trim() || cfg.defaultModel || '',
-        customUrl: $('settings-custom-url').value.trim(),
-        dailyGoal: parseInt($('settings-daily-goal').value) || 20,
-        supabaseUrl: $('settings-supabase-url').value.trim(),
-        supabaseKey: $('settings-supabase-key').value.trim(),
-        syncPassphrase: $('settings-sync-passphrase').value.trim(),
-      });
       const result = await Sync.sync();
-      if (result.pulled && result.pushed) toast('Sync complete: pulled & pushed ✓', 'success');
-      else if (result.pulled) toast('Pulled from server ✓', 'success');
-      else if (result.pushed) toast('Pushed to server ✓', 'success');
-      else toast('Sync configured but no data exchanged', '');
+      if (result.pulled && result.pushed) toast('Synced: pulled & pushed ✓', 'success');
+      else if (result.pulled) toast('Pulled latest data ✓', 'success');
+      else if (result.pushed) toast('Pushed to cloud ✓', 'success');
+      else toast('Already up to date', '');
       $('sync-status').textContent = 'Last sync: just now';
       $('sync-status').style.color = '#22c55e';
       renderDashboard();
@@ -1301,7 +1288,7 @@ function bindEvents() {
       renderWordBooks();
     } catch (err) {
       toast('Sync failed: ' + err.message, 'error');
-      $('sync-status').textContent = 'Error: ' + err.message.slice(0, 40);
+      $('sync-status').textContent = err.message.slice(0, 50);
       $('sync-status').style.color = '#ef4444';
       console.error(err);
     }
