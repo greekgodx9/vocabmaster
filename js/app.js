@@ -1122,16 +1122,97 @@ function bindEvents() {
     $('btn-toggle-supabase-key').textContent = inp.type === 'password' ? 'Show' : 'Hide';
   });
 
-  // Sync section toggle
-  $('sync-header').addEventListener('click', () => {
-    const body = $('sync-body');
-    const icon = $('sync-toggle-icon');
-    const isOpen = body.style.display !== 'none';
-    body.style.display = isOpen ? 'none' : '';
-    icon.style.transform = isOpen ? '' : 'rotate(180deg)';
+  // Sync section toggle — removed (always visible now)
+
+  // ── Local Sync: Show QR Code ──
+  $('btn-export-qr').addEventListener('click', () => {
+    const data = JSON.stringify(Storage.exportAll());
+    // QR codes can hold ~2.5KB. If data is too large, offer file export instead.
+    if (data.length > 2200) {
+      toast(`Data too large for QR (${(data.length/1024).toFixed(1)}KB). Use "Copy All Data" or file export instead.`, 'error');
+      return;
+    }
+    const qrContainer = $('qr-container');
+    const qrDiv = $('qr-code');
+    qrDiv.innerHTML = '';
+    qrContainer.style.display = '';
+    // QR code: encode the data directly as a URL that triggers import
+    const payload = btoa(unescape(encodeURIComponent(data)));
+    const importUrl = window.location.origin + window.location.pathname + '#import=' + payload;
+    new QRCode(qrDiv, {
+      text: importUrl,
+      width: 220,
+      height: 220,
+      colorDark: '#4f46e5',
+      colorLight: '#ffffff',
+    });
+  });
+  $('btn-close-qr').addEventListener('click', () => {
+    $('qr-container').style.display = 'none';
+    $('qr-code').innerHTML = '';
   });
 
-  // Sync Now button
+  // ── Local Sync: Import from File ──
+  $('btn-import-file').addEventListener('click', () => {
+    $('import-file-input').click();
+  });
+  $('import-file-input').addEventListener('change', async () => {
+    const file = $('import-file-input').files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data.words && !data.checkIns && !data.wordBooks) {
+        throw new Error('Not a valid VocabMaster export file');
+      }
+      // Use Sync's merge logic
+      Sync._mergeInto(data);
+      renderDashboard(); renderWords(); renderWordBooks();
+      toast(`Imported ${(data.words||[]).length} words ✓`, 'success');
+    } catch (err) {
+      toast('Import failed: ' + err.message, 'error');
+    }
+    $('import-file-input').value = '';
+  });
+
+  // ── Local Sync: Copy All Data ──
+  $('btn-copy-data').addEventListener('click', async () => {
+    const data = JSON.stringify(Storage.exportAll(), null, 2);
+    try {
+      await navigator.clipboard.writeText(data);
+      toast('Data copied to clipboard! Paste into WeChat/QQ/AirDrop.', 'success');
+    } catch {
+      // Fallback: show in a textarea for manual copy
+      const ta = document.createElement('textarea');
+      ta.value = data; ta.style.cssText = 'position:fixed;top:10%;left:10%;width:80%;height:80%;z-index:9999';
+      ta.select(); document.body.appendChild(ta);
+      toast('Tap and hold to Select All → Copy', '');
+      ta.addEventListener('blur', () => ta.remove());
+    }
+  });
+
+  // ── Check URL hash for incoming QR import ──
+  if (window.location.hash.startsWith('#import=')) {
+    try {
+      const payload = window.location.hash.slice(8);
+      const json = decodeURIComponent(escape(atob(payload)));
+      const data = JSON.parse(json);
+      if (data.words || data.checkIns || data.wordBooks) {
+        Sync._mergeInto(data);
+        // Clean URL
+        history.replaceState(null, '', window.location.pathname);
+        setTimeout(() => {
+          renderDashboard(); renderWords(); renderWordBooks();
+          toast('Data imported from QR! ✓', 'success');
+        }, 500);
+      }
+    } catch (err) {
+      console.log('QR import failed:', err.message);
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
+  // Settings — Cloud Sync, Supabase key toggle
   $('btn-sync-now').addEventListener('click', async () => {
     const btn = $('btn-sync-now');
     btn.disabled = true;

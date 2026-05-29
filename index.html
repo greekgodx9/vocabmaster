@@ -498,43 +498,62 @@
           </div>
           <p class="hint">仅存储于本地浏览器，不会发送到除 AI 接口提供商以外的任何地方。</p>
         </div>
-        <!-- ===== SYNC SETTINGS ===== -->
+        <!-- ===== LOCAL SYNC (no server needed) ===== -->
         <div class="sync-section">
-          <div class="sync-header" id="sync-header" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
-            <h3 style="margin:0;font-size:15px;color:var(--primary)">&#128260; Cross-Device Sync</h3>
-            <span id="sync-toggle-icon" style="font-size:18px;color:var(--text-muted);transition:transform .2s">&#9660;</span>
+          <div class="sync-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="margin:0;font-size:15px;color:var(--primary)">&#128260; Sync Between Devices</h3>
           </div>
-          <div id="sync-body" style="display:none;margin-top:12px">
-            <p class="hint" style="margin-bottom:12px">Sync your vocabulary data between PC and iPhone. <strong>Already configured</strong> — just set a passphrase!</p>
-            <div class="form-group">
-              <label>Sync Passphrase ⚠️ Required</label>
-              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase (e.g. my-vocab-2024)">
-              <p class="hint"><strong>Same passphrase on all your devices</strong> = same data. Each person should use a <em>different</em> passphrase to keep their data separate.</p>
+          <div style="padding:14px 18px">
+            <p class="hint" style="margin-bottom:14px">Transfer your vocabulary data between PC and iPhone — <strong>no server, no VPN needed</strong>.</p>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+              <button class="btn-sync-local" id="btn-export-qr">&#128247; Show QR Code</button>
+              <button class="btn-sync-local" id="btn-import-file">&#128194; Import from File</button>
+              <button class="btn-sync-local" id="btn-copy-data">&#128203; Copy All Data</button>
             </div>
-            <div class="sync-actions" style="display:flex;gap:10px;align-items:center;margin-top:4px">
+            <p class="hint">Scan QR with iPhone Camera app → tap the link → data auto-imports. Or transfer the exported JSON file via AirDrop / WeChat / QQ.</p>
+
+            <!-- QR Code display -->
+            <div id="qr-container" style="display:none;text-align:center;margin-top:14px;padding:16px;background:white;border-radius:12px">
+              <div id="qr-code"></div>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Scan with iPhone Camera app → tap the link</p>
+              <button class="btn-text" id="btn-close-qr" style="margin-top:6px">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden file input for import -->
+        <input type="file" id="import-file-input" accept=".json,application/json" style="display:none">
+
+        <!-- ===== CLOUD SYNC (Optional — needs internet) ===== -->
+        <details style="margin-bottom:20px">
+          <summary style="font-size:13px;color:var(--text-muted);cursor:pointer;padding:4px 0">🌐 Cloud Sync (optional — requires internet access to Supabase)</summary>
+          <div style="margin-top:10px">
+            <p class="hint" style="margin-bottom:12px">Auto-sync between devices via Supabase. May not work in China without VPN.</p>
+            <div class="form-group">
+              <label>Sync Passphrase</label>
+              <input type="password" id="settings-sync-passphrase" placeholder="Pick a secret passphrase">
+              <p class="hint">Same passphrase on all devices. Different per person.</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
               <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Sync Now</button>
               <span id="sync-status" style="font-size:12px;color:var(--text-muted)"></span>
             </div>
-            <details style="margin-top:12px">
-              <summary style="font-size:12px;color:var(--text-muted);cursor:pointer">Advanced: use your own Supabase project</summary>
+            <details style="margin-top:10px">
+              <summary style="font-size:11px;color:var(--text-muted);cursor:pointer">Advanced: custom Supabase project</summary>
               <div style="margin-top:8px">
                 <div class="form-group">
                   <label>Supabase Project URL</label>
                   <input type="text" id="settings-supabase-url" placeholder="Leave blank for default">
-                  <p class="hint">Default: a shared project is already configured.</p>
                 </div>
                 <div class="form-group">
                   <label>Supabase Anon Key</label>
-                  <div class="api-key-wrap">
-                    <input type="password" id="settings-supabase-key" placeholder="Leave blank for default">
-                    <button class="btn-text" id="btn-toggle-supabase-key">Show</button>
-                  </div>
-                  <p class="hint">Default key is already set — only change if using your own project.</p>
+                  <input type="password" id="settings-supabase-key" placeholder="Leave blank for default">
                 </div>
               </div>
             </details>
           </div>
-        </div>
+        </details>
 
         <div class="form-group">
           <label>Daily Review Goal</label>
@@ -543,7 +562,6 @@
       </div>
       <div class="modal-footer">
         <div class="modal-footer-left">
-          <button class="btn-text btn-export" id="btn-export">&#8681; Export Data</button>
           <button class="btn-danger" id="btn-clear-data">&#128465; Clear All</button>
         </div>
         <button class="btn-primary" id="btn-save-settings">Save Settings</button>
@@ -554,8 +572,9 @@
   <div class="toast" id="toast"></div>
   <div id="word-tooltip" class="word-tooltip" style="display:none"></div>
 
-  <!-- SheetJS for Excel import (requires internet on first load) -->
+  <!-- SheetJS for Excel import; QRCode for local sync -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/sm2.js"></script>
   <script src="js/api.js"></script>

@@ -723,6 +723,27 @@ textarea:focus { border-color: var(--primary); }
 .spell-result-skip .spell-result-badge    { background: var(--border); color: var(--text-muted); }
 .spell-result-answer { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
+/* ===== LOCAL SYNC BUTTONS ===== */
+.btn-sync-local {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text);
+  white-space: nowrap;
+}
+.btn-sync-local:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
 /* ===== SYNC SECTION (in Settings modal) ===== */
 .sync-section {
   border: 1px solid var(--border);
