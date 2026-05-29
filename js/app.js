@@ -261,8 +261,13 @@ async function handleGenerateArticle() {
 // ── WORD TOOLTIP ───────────────────────────────────────────────────────────
 let _ttHideTimer = null;
 
-function hideTooltip() {
+function hideTooltip(delay = 0) {
   const tt = $('word-tooltip');
+  clearTimeout(_ttHideTimer);
+  if (delay > 0) {
+    _ttHideTimer = setTimeout(() => hideTooltip(0), delay);
+    return;
+  }
   tt.classList.remove('tt-visible');
   _ttHideTimer = setTimeout(() => {
     if (!tt.classList.contains('tt-visible')) tt.style.display = 'none';
@@ -275,14 +280,31 @@ function setupArticleTooltip() {
   const fresh = body.cloneNode(true);
   body.parentNode.replaceChild(fresh, body);
 
-  // Desktop: hover to show
+  const tt = $('word-tooltip');
+
+  // Desktop: hover mark → show tooltip
   fresh.addEventListener('mouseover', e => {
     const mark = e.target.closest('mark');
     if (!mark) return;
     clearTimeout(_ttHideTimer);
     renderWordTooltip(mark);
   });
-  fresh.addEventListener('mouseleave', hideTooltip);
+
+  // Mouse leaves mark → short grace period before hiding
+  fresh.addEventListener('mouseout', e => {
+    const mark = e.target.closest('mark');
+    if (mark) hideTooltip(200);
+  });
+
+  // Mouse enters tooltip → keep it alive (user is reading)
+  tt.addEventListener('mouseenter', () => {
+    clearTimeout(_ttHideTimer);
+  });
+
+  // Mouse leaves tooltip → hide immediately
+  tt.addEventListener('mouseleave', () => {
+    hideTooltip(0);
+  });
 
   // Mobile: tap to show, tap elsewhere to hide
   fresh.addEventListener('click', e => {
@@ -296,11 +318,9 @@ function setupArticleTooltip() {
 
   // Click anywhere outside the tooltip → dismiss
   document.addEventListener('click', e => {
-    const tt = $('word-tooltip');
     if (!tt.classList.contains('tt-visible')) return;
-    // Don't hide if clicking inside the tooltip or on a mark
     if (tt.contains(e.target) || e.target.closest('mark')) return;
-    hideTooltip();
+    hideTooltip(0);
   });
 }
 
