@@ -753,6 +753,16 @@ textarea:focus { border-color: var(--primary); }
   .article-config.collapsed .btn-collapse-config { transform: rotate(180deg); }
 }
 
+/* ===== DASHBOARD WHISPER ===== */
+.dashboard-whisper {
+  text-align: center;
+  font-size: 13px;
+  color: #a78bfa;
+  font-style: italic;
+  margin: 0 0 12px;
+  letter-spacing: .3px;
+}
+
 /* ===== LOCAL SYNC BUTTONS ===== */
 .btn-sync-local {
   flex: 1;
