@@ -1129,27 +1129,65 @@ function bindEvents() {
   // Sync section toggle — removed (always visible now)
 
   // ── Local Sync: Show QR Code ──
-  $('btn-export-qr').addEventListener('click', () => {
-    const data = JSON.stringify(Storage.exportAll());
-    // QR codes can hold ~2.5KB. If data is too large, offer file export instead.
-    if (data.length > 2200) {
-      toast(`Data too large for QR (${(data.length/1024).toFixed(1)}KB). Use "Copy All Data" or file export instead.`, 'error');
-      return;
-    }
+  $('btn-export-qr').addEventListener('click', async () => {
     const qrContainer = $('qr-container');
     const qrDiv = $('qr-code');
     qrDiv.innerHTML = '';
     qrContainer.style.display = '';
-    // QR code: encode the data directly as a URL that triggers import
-    const payload = btoa(unescape(encodeURIComponent(data)));
-    const importUrl = window.location.origin + window.location.pathname + '#import=' + payload;
-    new QRCode(qrDiv, {
-      text: importUrl,
-      width: 220,
-      height: 220,
-      colorDark: '#4f46e5',
-      colorLight: '#ffffff',
-    });
+
+    // Try to load QRCode library if not already loaded
+    if (typeof QRCode === 'undefined') {
+      qrDiv.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Loading QR library...</p>';
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('CDN blocked'));
+          document.head.appendChild(script);
+        });
+      } catch {
+        qrDiv.innerHTML = '<p style="padding:20px;color:#ef4444">QR library failed to load (CDN may be blocked).<br><br>Use <strong>Copy All Data</strong> instead — paste into WeChat/QQ to transfer.</p>';
+        return;
+      }
+    }
+
+    // Compress: strip sm2 details for QR (keep only words + definitions + IDs)
+    const compact = {
+      words: Storage.getWords().map(w => ({
+        id: w.id, word: w.word,
+        m: w.meanings || (w.definition ? [w.definition] : []),
+        sm2: w.sm2,  // keep SM2 for full sync
+        d: (w.dateAdded || '').slice(0, 10),
+      })),
+      checkIns: Storage.getCheckIns(),
+      wordBooks: Storage.getWordBooks().map(b => ({
+        id: b.id, name: b.name, words: b.words, dailyGoal: b.dailyGoal,
+        releasedCount: b.releasedCount, active: b.active, startDate: b.startDate,
+      })),
+    };
+    const raw = JSON.stringify(compact);
+    // QR max ~2.5KB raw bytes
+    if (raw.length > 2400) {
+      qrDiv.innerHTML = `<p style="padding:20px;color:#d97706">Data too large for QR (${(raw.length/1024).toFixed(1)}KB compressed).<br><br>Use <strong>Copy All Data</strong> instead.<br><br><small>${Storage.getWords().length} words total</small></p>`;
+      return;
+    }
+
+    try {
+      const payload = btoa(unescape(encodeURIComponent(raw)));
+      const importUrl = window.location.origin + window.location.pathname + '#import=' + payload;
+      new QRCode(qrDiv, {
+        text: importUrl,
+        width: 220,
+        height: 220,
+        colorDark: '#4f46e5',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.L,
+      });
+    } catch (err) {
+      qrDiv.innerHTML = '<p style="padding:20px;color:#ef4444">Failed to generate QR.<br><br>Use <strong>Copy All Data</strong> instead.</p>';
+      console.error('QR generation error:', err);
+    }
   });
   $('btn-close-qr').addEventListener('click', () => {
     $('qr-container').style.display = 'none';
@@ -1200,19 +1238,35 @@ function bindEvents() {
     try {
       const payload = window.location.hash.slice(8);
       const json = decodeURIComponent(escape(atob(payload)));
-      const data = JSON.parse(json);
-      if (data.words || data.checkIns || data.wordBooks) {
-        Sync._mergeInto(data);
-        // Clean URL
-        history.replaceState(null, '', window.location.pathname);
-        setTimeout(() => {
-          renderDashboard(); renderWords(); renderWordBooks();
-          toast('Data imported from QR! ✓', 'success');
-        }, 500);
+      const compact = JSON.parse(json);
+      // Handle compact QR format (words use "m" instead of "meanings", "d" for dateAdded)
+      const data = { checkIns: compact.checkIns || [], wordBooks: [], settings: {} };
+      if (compact.words) {
+        data.words = compact.words.map(w => ({
+          id: w.id, word: w.word,
+          meanings: w.m || w.meanings || (w.definition ? [w.definition] : []),
+          definition: (w.m?.[0]) || (w.meanings?.[0]) || w.definition || '',
+          dateAdded: w.d ? w.d + 'T00:00:00.000Z' : (w.dateAdded || new Date().toISOString()),
+          sm2: w.sm2 || SM2.initial(),
+          wordBookId: w.wordBookId || null,
+        }));
       }
+      if (compact.wordBooks) {
+        data.wordBooks = compact.wordBooks.map(b => ({
+          ...b, createdAt: b.createdAt || b.startDate || new Date().toISOString(),
+          lastReleaseDate: b.lastReleaseDate || null, words: b.words || [],
+        }));
+      }
+      Sync._mergeInto(data);
+      history.replaceState(null, '', window.location.pathname);
+      setTimeout(() => {
+        renderDashboard(); renderWords(); renderWordBooks();
+        toast(`Imported ${(data.words||[]).length} words via QR ✓`, 'success');
+      }, 500);
     } catch (err) {
       console.log('QR import failed:', err.message);
       history.replaceState(null, '', window.location.pathname);
+      toast('QR import failed — try file import instead', 'error');
     }
   }
 
