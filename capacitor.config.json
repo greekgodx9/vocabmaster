@@ -1,0 +1,14 @@
+{
+  "appId": "com.vocabmaster.app",
+  "appName": "VocabMaster",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true
+  },
+  "ios": {
+    "scheme": "VocabMaster",
+    "contentInset": "automatic",
+    "allowsLinkPreview": false
+  }
+}

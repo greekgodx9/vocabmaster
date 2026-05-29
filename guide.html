@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabMaster 使用指南</title>
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-light: #eef2ff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --tip-bg: #eff6ff;
+    --tip-border: #bfdbfe;
+    --warn-bg: #fffbeb;
+    --warn-border: #fde68a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+  .toc {
+    width: 260px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    padding: 28px 16px;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    font-size: 13px;
+  }
+  .toc-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .toc ul { list-style: none; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { color: var(--muted); text-decoration: none; display: block; padding: 4px 8px; border-radius: 6px; transition: all .15s; }
+  .toc a:hover { color: var(--primary); background: var(--primary-light); }
+  .toc .toc-h2 { font-weight: 600; color: var(--text); }
+  .toc .toc-h3 { padding-left: 16px; font-size: 12px; }
+  .content { margin-left: 260px; padding: 48px 64px; max-width: 960px; }
+
+  /* Header */
+  .guide-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    padding: 48px 64px;
+    margin-left: 260px;
+  }
+  .guide-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .guide-header p { font-size: 16px; opacity: .85; }
+  .guide-meta { margin-top: 16px; font-size: 13px; opacity: .7; }
+
+  /* Typography */
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 48px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-light);
+    color: var(--primary);
+    scroll-margin-top: 24px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--text);
+    scroll-margin-top: 24px;
+  }
+  h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--muted); }
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 10px 0 16px 24px; }
+  li { margin-bottom: 8px; }
+  code {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    font-size: 13px;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 12px 0 18px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    line-height: 1.7;
+  }
+  strong { font-weight: 600; }
+  a { color: var(--primary); }
+
+  /* Callout boxes */
+  .tip, .warn, .danger-box, .info {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .tip   { background: var(--tip-bg);  border-left: 4px solid #3b82f6; }
+  .warn  { background: var(--warn-bg); border-left: 4px solid var(--warning); }
+  .danger-box { background: #fef2f2; border-left: 4px solid var(--danger); }
+  .info  { background: #f0fdf4; border-left: 4px solid var(--success); }
+  .callout-title { font-weight: 700; margin-bottom: 6px; display: block; }
+
+  /* Steps */
+  .steps { counter-reset: step; margin: 16px 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    content: counter(step);
+    min-width: 28px; height: 28px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-body p { margin-bottom: 6px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+  th { background: var(--primary-light); color: var(--primary); font-weight: 600; padding: 10px 14px; text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #fafafa; }
+
+  /* Provider cards */
+  .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .provider-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .provider-card .pname { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .provider-card .ptag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .tag-green { background: #dcfce7; color: #15803d; }
+  .tag-orange { background: #fef3c7; color: #92400e; }
+  .tag-blue { background: #dbeafe; color: #1d4ed8; }
+  .provider-card .purl { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .provider-card .pmodel { font-size: 12px; background: #f3f4f6; padding: 3px 8px; border-radius: 5px; display: inline-block; margin-top: 4px; font-family: Consolas, monospace; }
+
+  /* Rate buttons reference */
+  .rate-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0; }
+  .rate-card { border-radius: 10px; padding: 14px; text-align: center; }
+  .rate-again  { background: #fef2f2; color: #dc2626; border: 2px solid #fca5a5; }
+  .rate-hard   { background: #fef3c7; color: #d97706; border: 2px solid #fde68a; }
+  .rate-good   { background: #ecfdf5; color: #059669; border: 2px solid #6ee7b7; }
+  .rate-easy   { background: #eff6ff; color: #2563eb; border: 2px solid #bfdbfe; }
+  .rate-name { font-weight: 700; font-size: 15px; }
+  .rate-sub  { font-size: 12px; margin-top: 4px; opacity: .8; }
+
+  /* Mastery levels */
+  .mastery-table td:first-child { font-weight: 600; }
+
+  /* Daily routine */
+  .routine-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .routine-time {
+    min-width: 80px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--primary);
+  }
+  .routine-body { flex: 1; }
+  .routine-body strong { display: block; font-size: 15px; margin-bottom: 4px; }
+
+  .divider { height: 1px; background: var(--border); margin: 40px 0; }
+  .back-top { display: block; text-align: right; font-size: 13px; color: var(--muted); margin-top: 32px; }
+
+  @media (max-width: 900px) {
+    .toc { display: none; }
+    .guide-header, .content { margin-left: 0; }
+    .content { padding: 24px 20px; }
+    .provider-grid, .rate-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOC -->
+<nav class="toc">
+  <div class="toc-title">📚 VocabMaster 使用指南</div>
+  <ul>
+    <li><a class="toc-h2" href="#s0">软件简介</a></li>
+    <li><a class="toc-h2" href="#s1">一、打开软件</a></li>
+    <li><a class="toc-h2" href="#s2">二、配置 Settings</a></li>
+    <li><a class="toc-h3" href="#s2-1">获取 API Key</a></li>
+    <li><a class="toc-h3" href="#s2-2">填写 Settings</a></li>
+    <li><a class="toc-h2" href="#s3">三、添加单词</a></li>
+    <li><a class="toc-h3" href="#s3-1">手动输入（My Words）</a></li>
+    <li><a class="toc-h3" href="#s3-2">导入词书（Word Books）</a></li>
+    <li><a class="toc-h2" href="#s4">四、生成有声文章</a></li>
+    <li><a class="toc-h3" href="#s4-1">选词与设置</a></li>
+    <li><a class="toc-h3" href="#s4-2">朗读功能</a></li>
+    <li><a class="toc-h2" href="#s5">五、每日复习</a></li>
+    <li><a class="toc-h3" href="#s5-1">SM-2 算法原理</a></li>
+    <li><a class="toc-h3" href="#s5-2">如何使用闪卡</a></li>
+    <li><a class="toc-h3" href="#s5-3">四个评分按钮</a></li>
+    <li><a class="toc-h2" href="#s6">六、Dashboard 总览</a></li>
+    <li><a class="toc-h2" href="#s7">七、进度追踪</a></li>
+    <li><a class="toc-h2" href="#s8">八、每日推荐流程</a></li>
+    <li><a class="toc-h2" href="#s9">九、常见问题</a></li>
+    <li><a class="toc-h2" href="#s10">十、进阶技巧</a></li>
+  </ul>
+</nav>
+
+<!-- Header -->
+<div class="guide-header">
+  <h1>📚 VocabMaster 使用完全指南</h1>
+  <p>从零开始配置，到每天高效记单词——完整上手手册</p>
+  <div class="guide-meta">适用于 VocabMaster v2.0 &nbsp;·&nbsp; 建议阅读时间：15 分钟</div>
+</div>
+
+<!-- Main content -->
+<div class="content">
+
+<!-- 简介 -->
+<h2 id="s0">软件简介</h2>
+<p>VocabMaster 是一款运行在浏览器里的英语单词记忆工具，无需安装，双击 <code>index.html</code> 即可使用。它把三件事合为一体：</p>
+<ul>
+  <li><strong>AI 生成有声文章</strong>——把你的生词融入一篇高质量英语文章，在语境中理解单词</li>
+  <li><strong>SM-2 间隔复习</strong>——基于艾宾浩斯遗忘曲线，在你快要忘记单词的那一刻复习，效率最高</li>
+  <li><strong>词书计划</strong>——导入几千词的词书，每天自动释放固定数量，像"不背单词"一样系统推进</li>
+</ul>
+<p>所有数据都储存在你本机浏览器的 <strong>localStorage</strong> 里，不联网、不上传，完全私密。只有生成文章时需要调用 AI 接口。</p>
+
+<div class="tip">
+  <span class="callout-title">💡 学习逻辑一句话概括</span>
+  今天加入新词 → 生成文章在上下文中感知它 → SM-2 安排复习时间点 → 在快要忘记前复习 → 复习间隔越来越长直到永远记住
+</div>
+
+<div class="divider"></div>
+
+<!-- 一、打开软件 -->
+<h2 id="s1">一、打开软件</h2>
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p><strong>找到文件夹</strong>：软件位于 <code>D:\English\vocab-app\</code>，文件夹内容如下：</p>
+      <pre>vocab-app/
+├── index.html      ← 主程序，双击这个打开
+├── guide.html      ← 本手册
+├── css/
+│   └── style.css
+└── js/
+    ├── app.js
+    ├── api.js
+    ├── storage.js
+    ├── sm2.js
+    └── tts.js</pre>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p><strong>用浏览器打开</strong>：右键 <code>index.html</code> → 打开方式 → <strong>Microsoft Edge</strong> 或 <strong>Google Chrome</strong>（推荐这两款，Safari 和 Firefox 也可以）。</p>
+      <div class="warn">
+        <span class="callout-title">⚠️ 注意</span>
+        不要用 IE 或旧版 Edge（EdgeHTML）。如果文字-to-语音功能不正常，换用 Chrome 或新版 Edge。
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p><strong>看到界面</strong>：左侧是导航栏，右侧是内容区。首次打开，右下角会出现提示："提示：点击左下角 Settings 填入 API Key"。这是对的，我们接下来就去设置它。</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- 二、配置 Settings -->
+<h2 id="s2">二、配置 Settings（最重要的一步）</h2>
+<p>VocabMaster 通过 AI 接口生成文章。你需要有一个 API Key 才能使用文章生成功能。复习、打卡等功能不需要 API Key，离线即可使用。</p>
+
+<h3 id="s2-1">第一步：获取 API Key</h3>
+<p>以下是所有支持的接口，<strong>国内用户推荐首选 DeepSeek</strong>——价格最低、速度快、无需 VPN。</p>
+
+<div class="provider-grid">
+  <div class="provider-card">
+    <div class="pname">⭐ DeepSeek</div>
+    <span class="ptag tag-green">国内可用 · 最便宜</span>
+    <p>由深度求索开发，效果优秀，价格极低（约 ¥0.001/千tokens）。<strong>强烈推荐国内用户首选。</strong></p>
+    <div class="purl">注册地址：platform.deepseek.com</div>
+    <div class="pmodel">默认模型：deepseek-chat</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">豆包 Doubao（字节跳动）</div>
+    <span class="ptag tag-green">国内可用</span>
+    <p>字节跳动的火山方舟平台。需要先创建「推理接入点（Endpoint）」，把 Endpoint ID 填入 Model ID 栏。</p>
+    <div class="purl">注册地址：console.volcengine.com → 火山方舟</div>
+    <div class="pmodel">模型：ep-xxxxxxxx（你的 Endpoint ID）</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">通义千问 Qwen（阿里云）</div>
+    <span class="ptag tag-green">国内可用</span>
+    <p>阿里云的大模型服务，文字质量高，有免费额度。</p>
+    <div class="purl">注册地址：dashscope.aliyuncs.com</div>
+    <div class="pmodel">默认模型：qwen-plus</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">智谱 GLM</div>
+    <span class="ptag tag-green">国内可用</span>
+    <p>清华技术加持，GLM-4 系列效果好，glm-4-flash 有免费额度。</p>
+    <div class="purl">注册地址：open.bigmodel.cn</div>
+    <div class="pmodel">默认模型：glm-4-flash</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">Kimi（Moonshot AI）</div>
+    <span class="ptag tag-green">国内可用</span>
+    <p>擅长长文本理解，生成文章质量高，有免费额度。</p>
+    <div class="purl">注册地址：platform.moonshot.cn</div>
+    <div class="pmodel">默认模型：moonshot-v1-8k</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">Claude（Anthropic）</div>
+    <span class="ptag tag-orange">需要 VPN</span>
+    <p>英语写作能力最强，生成的文章地道且有深度。需要能访问境外网络。</p>
+    <div class="purl">注册地址：console.anthropic.com</div>
+    <div class="pmodel">模型：claude-sonnet-4-6（内置固定）</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">OpenAI（GPT-4o）</div>
+    <span class="ptag tag-orange">需要 VPN</span>
+    <p>最通用的接口，效果优秀。需要能访问境外网络。</p>
+    <div class="purl">注册地址：platform.openai.com</div>
+    <div class="pmodel">模型：gpt-4o（内置固定）</div>
+  </div>
+  <div class="provider-card">
+    <div class="pname">自定义（Custom）</div>
+    <span class="ptag tag-blue">高级用户</span>
+    <p>任何 OpenAI 兼容接口都可以填进来，包括本地部署的 Ollama 等。</p>
+    <div class="purl">需要填写：完整 API URL + 模型名</div>
+    <div class="pmodel">示例：http://localhost:11434/v1/chat/completions</div>
+  </div>
+</div>
+
+<h4>以 DeepSeek 为例的注册流程：</h4>
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><p>打开 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>，用手机号注册账号并登录。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body"><p>进入「API Keys」页面，点击「创建 API Key」，给它取个名字（随意），然后<strong>复制生成的 Key</strong>（格式类似 <code>sk-xxxxxxxxxxxxxxxx</code>）。</p>
+    <div class="warn"><span class="callout-title">⚠️ 注意</span>Key 只显示一次！请立即复制保存，或直接粘贴进 VocabMaster 的 Settings。</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body"><p>可以充值一点（哪怕 ¥5）激活账号，也可以先用官方免费额度试用。生成一篇 500 词文章大约消耗 0.001 元，非常便宜。</p></div>
+  </div>
+</div>
+
+<h3 id="s2-2">第二步：在 VocabMaster 里填写 Settings</h3>
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><p>点击左侧边栏最底部的 <strong>⚙ Settings</strong> 按钮，弹出设置窗口。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p><strong>AI Provider</strong>：从下拉列表选择你的接口商。国内用户选 <code>DeepSeek（推荐，国内可用）</code>。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p><strong>Model ID</strong>（部分接口才显示此栏）：如果你选了 DeepSeek，默认已填好 <code>deepseek-chat</code>，无需修改。如果选了豆包，需要填入你在火山方舟控制台创建的 Endpoint ID（格式：<code>ep-xxxxxxxxxx</code>）。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p><strong>API Key</strong>：将刚才复制的 Key 粘贴进去。旁边有「Show/Hide」按钮可以切换显示。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p><strong>Daily Review Goal</strong>：每天计划复习多少个单词（默认 20，可根据自身情况调整）。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <p>点击 <strong>Save Settings</strong>，右下角弹出「Settings saved ✓」即配置成功。</p>
+    </div>
+  </div>
+</div>
+
+<div class="info">
+  <span class="callout-title">🔐 安全说明</span>
+  API Key 只存在你自己浏览器的 localStorage 里，不会发送到任何第三方服务器，只在你点击"Generate Article"时直接发送给所选 AI 接口商。
+</div>
+
+<div class="divider"></div>
+
+<!-- 三、添加单词 -->
+<h2 id="s3">三、添加单词</h2>
+<p>VocabMaster 支持两种加词方式：<strong>手动逐条输入</strong>和<strong>批量导入词书</strong>。两者可以同时使用。</p>
+
+<h3 id="s3-1">方式 A：手动输入（My Words）</h3>
+<p>适合：每天记录课堂上/阅读中遇到的新词，数量不多但质量高。</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><p>点击左侧导航 <strong>My Words</strong>，进入单词库页面。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body"><p>点击右上角 <strong>+ Add Words</strong> 按钮，展开输入区域。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>在文本框中输入单词，每行一个，支持三种格式：</p>
+      <pre># 1. 只输入单词（无释义）
+ephemeral
+
+# 2. 单词 + 单个释义
+ubiquitous : present or found everywhere
+
+# 3. 单词 + 多个释义（用分号分隔，用于「熟词生义」）
+bank : (n.) 河岸; (n.) 银行; (v.) 使飞机或汽车倾斜转弯
+sanction : (n.) 官方许可与认可; (v.) 对...实施制裁或惩罚</pre>
+      <div class="tip">
+        <span class="callout-title">💡 多释义的意义（熟词生义）</span>
+        "bank"是大家都认识的词，但"使飞机倾斜"这个动词义很多人不知道。加入多个释义后，AI 生成文章时会刻意使用那个你不熟悉的义项，强迫你在真实语境中接触生义——这正是"熟词生义"学习法的精髓。
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body"><p>点击 <strong>Add Words</strong>。系统会自动去重，右下角会提示添加了多少个词、跳过了多少个重复词。</p></div>
+  </div>
+</div>
+
+<h4>My Words 页面功能说明：</h4>
+<table>
+  <tr><th>功能</th><th>位置</th><th>说明</th></tr>
+  <tr><td>搜索</td><td>搜索框</td><td>实时按单词名或释义过滤</td></tr>
+  <tr><td>筛选状态</td><td>下拉框</td><td>New / Learning / Young / Mature 四个掌握阶段</td></tr>
+  <tr><td>按日期分组</td><td>📅 By Date 按钮</td><td>按加入日期分组，方便查看"今天加了哪些词"</td></tr>
+  <tr><td>删除</td><td>每行最右侧 ✕</td><td>点击后弹出确认框再删除</td></tr>
+  <tr><td>下次复习</td><td>Next Review 列</td><td>显示该词下次复习的日期；"Due now"表示现在就该复习了</td></tr>
+</table>
+
+<h3 id="s3-2">方式 B：批量导入词书（Word Books）</h3>
+<p>适合：有一本几百到几千词的词书（如考研5500、雅思高频词、GRE词表），想按计划系统学完。</p>
+
+<h4>准备词表文件</h4>
+<p>支持两种文件格式：</p>
+<ul>
+  <li><strong>CSV 文件</strong>（.csv）：用 Excel 或记事本创建，最通用</li>
+  <li><strong>Excel 文件</strong>（.xlsx / .xls）：直接用 Excel 创建</li>
+</ul>
+
+<p>点击 <strong>Word Books → New Plan → ↓ 下载模版</strong>，会自动下载一个模版文件 <code>vocabmaster-template.csv</code>，用 Excel 打开后格式如下：</p>
+
+<table>
+  <tr><th>Word（必填）</th><th>Definition 1（可选）</th><th>Definition 2（可选）</th><th>Definition 3（可选）</th></tr>
+  <tr><td>ephemeral</td><td>lasting for a very short time</td><td></td><td></td></tr>
+  <tr><td>ubiquitous</td><td>present appearing or found everywhere</td><td></td><td></td></tr>
+  <tr><td>bank</td><td>(n.) the side of a river</td><td>(n.) a financial institution</td><td>(v.) to tilt an aircraft</td></tr>
+</table>
+
+<div class="tip">
+  <span class="callout-title">💡 填写技巧</span>
+  <ul>
+    <li>第一行是表头（Word, Definition 1...），系统会自动识别并跳过</li>
+    <li>释义列可以全部留空，只有单词也能导入——生成文章时 AI 会自动在语境中帮你理解</li>
+    <li>一行多个释义 = 熟词生义，AI 会刻意使用你不熟悉的那个意思</li>
+    <li>Excel 里直接复制粘贴一列单词就行，保存为 .xlsx 或另存为 .csv 都可以</li>
+  </ul>
+</div>
+
+<h4>创建学习计划</h4>
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><p>点击左侧导航 <strong>Word Books</strong>，然后点右上角 <strong>+ New Plan</strong>。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p><strong>Plan Name</strong>：给词书取个名字，例如"考研英语词汇5500"、"雅思高频词"。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p><strong>Daily New Words</strong>：选择每天学多少个新词。点击快捷按钮（20/30/50/100），或在输入框自定义。</p>
+      <div class="tip">
+        <span class="callout-title">💡 如何选择每日目标？</span>
+        <ul>
+          <li>考研/雅思备考（时间充裕）：50～100 词/天</li>
+          <li>日常学习维持：20～30 词/天</li>
+          <li>初学者：20 词/天，先把复习节奏培养起来</li>
+        </ul>
+        注意：新词越多，后续积累的复习量也越大。宁少勿多，保持可持续。
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p><strong>Upload File 标签页</strong>：将准备好的 CSV 或 Excel 文件拖拽到虚线框，或点击框内「点击选择」按钮选取文件。上传后会看到词表预览（前 8 行），确认内容正确。</p>
+      <p>或切换到 <strong>Paste Text 标签页</strong>：直接粘贴文字内容，格式同手动输入（支持 <code>word : 释义1; 释义2</code>）。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p>点击 <strong>▶ Start Plan</strong>。系统会立刻释放今天应学的第一批新词到「My Words」，并弹出提示："词书创建成功！今日已释放 N 个新词"。</p>
+    </div>
+  </div>
+</div>
+
+<h4>词书的每日自动释放机制</h4>
+<p>创建词书后，<strong>每次打开软件时</strong>，系统会自动计算今天应该释放多少词并加入 My Words：</p>
+<ul>
+  <li>第 1 天：释放第 1～50 词（假设目标 50/天）</li>
+  <li>第 2 天：释放第 51～100 词</li>
+  <li>第 N 天：释放第 (N-1)×50+1 到 N×50 词</li>
+  <li>如果某天忘记打开软件，下次打开时会补释放累积的词（不会超过一个周期的量）</li>
+</ul>
+
+<div class="warn">
+  <span class="callout-title">⚠️ 重要提示</span>
+  词书只是个"释放队列"。词书里的词并不直接参与复习——被释放后才真正进入 My Words，然后 SM-2 才开始为它安排复习计划。
+</div>
+
+<p>词书卡片上可以看到：总词数、已释放数、剩余词数、按当前进度预计完成天数。右侧按钮可以暂停（⏸）或删除（🗑）词书，删除词书不影响已经进入 My Words 的词。</p>
+
+<div class="divider"></div>
+
+<!-- 四、生成有声文章 -->
+<h2 id="s4">四、生成有声文章（Generate Article）</h2>
+<p>这是 VocabMaster 的核心功能。AI 会根据你选择的单词，生成一篇指定难度的英语文章，你的生词会自然地融入其中，并高亮显示。</p>
+
+<h3 id="s4-1">选词与生成设置</h3>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><p>点击左侧导航 <strong>Generate Article</strong>。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p><strong>Words to Include（选择要融入的单词）</strong>：左侧面板顶部是快速选择按钮：</p>
+      <table>
+        <tr><th>按钮</th><th>作用</th></tr>
+        <tr><td><strong>All</strong></td><td>勾选全部单词</td></tr>
+        <tr><td><strong>None</strong></td><td>取消全部勾选</td></tr>
+        <tr><td><strong>Today New</strong></td><td>只勾选今天新加入的词（刚学的，最需要在语境中强化）</td></tr>
+        <tr><td><strong>Today Due</strong></td><td>只勾选今天到期复习的词</td></tr>
+        <tr><td><strong>Today All</strong></td><td>今天的新词 + 今天到期的词合并选中</td></tr>
+      </table>
+      <p>单词列表按加入日期分组排列，有多个释义的词会在名字后显示 <code style="color:#a78bfa">×2</code>（表示有 2 个释义）。你也可以手动勾选/取消任意单词。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p><strong>Topic（主题）</strong>（可选）：给文章设定一个话题，例如 <code>climate change</code>、<code>artificial intelligence</code>、<code>education reform</code>。留空则由 AI 自由选题。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p><strong>Length（长度）</strong>：Short（约300词）/ Medium（约500词）/ Long（约700词）。建议日常用 Medium，想深度阅读选 Long。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p><strong>Level（难度）</strong>：</p>
+      <ul>
+        <li><strong>CET-6</strong>：大学英语六级水平，适合四六级备考</li>
+        <li><strong>IELTS 7-8 / Graduate</strong>（默认）：雅思高分/研究生英语水平，正式学术文体</li>
+        <li><strong>GRE / Academic</strong>：GRE 考试 / 顶级学术英语，词汇复杂、句式精密</li>
+      </ul>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body"><p>点击 <strong>✨ Generate Article</strong>，等待 5～15 秒，文章会显示在右侧。</p></div>
+  </div>
+</div>
+
+<h4>阅读生成的文章</h4>
+<p>文章中用<span style="background:#fef9c3;color:#854d0e;padding:1px 4px;border-radius:3px;font-weight:600;">黄色高亮</span>标出了你选中的每一个生词。你可以：</p>
+<ul>
+  <li>先通读全文，感受生词在真实语境中的用法</li>
+  <li>看不懂的句子，先猜测意思，然后结合文章底部「Target Words Used」核对</li>
+  <li>注意有多释义的词——AI 会刻意使用你不熟悉的那个义项（熟词生义效果）</li>
+</ul>
+
+<h3 id="s4-2">有声朗读功能</h3>
+<p>文章顶部是 TTS（文字转语音）控制栏：</p>
+<table>
+  <tr><th>控件</th><th>功能</th></tr>
+  <tr><td>▶ Play</td><td>开始朗读全文（从头开始）；如果已暂停则继续</td></tr>
+  <tr><td>⏸ Pause</td><td>暂停，可再按 Play 继续</td></tr>
+  <tr><td>⏹ Stop</td><td>停止，下次 Play 重新从头开始</td></tr>
+  <tr><td>Speed 滑块</td><td>调节语速：0.5x（很慢）到 2.0x（很快）。精听建议 0.8x，日常 1.0x，熟悉后 1.2x</td></tr>
+  <tr><td>Voice 下拉</td><td>选择朗读声音（根据浏览器和系统可用的英语语音列表）。推荐选标注 en-US 的美式发音</td></tr>
+</table>
+
+<div class="tip">
+  <span class="callout-title">💡 最佳阅读策略</span>
+  <ol>
+    <li>先<strong>静读</strong>全文，遇到高亮词尝试根据上下文推断意思</li>
+    <li>再<strong>精听</strong>（Speed 0.8x），跟读或默读，注意每个高亮词的发音和用法</li>
+    <li>最后<strong>正常速度</strong>（1.0x）听一遍，感受自然语流</li>
+  </ol>
+</div>
+
+<div class="warn">
+  <span class="callout-title">⚠️ TTS 说明</span>
+  朗读使用浏览器内置的 Web Speech API，完全本地、免费、无需联网。不同浏览器的语音质量有差异：Chrome 和 Edge 的英语语音质量最好。
+</div>
+
+<div class="divider"></div>
+
+<!-- 五、每日复习 -->
+<h2 id="s5">五、每日复习（Review）</h2>
+<p>这是让单词真正留在记忆里的核心环节。使用科学的 SM-2 间隔复习算法，保证在最高效的时间点复习每个词。</p>
+
+<h3 id="s5-1">SM-2 算法原理（为什么这样安排复习时间）</h3>
+<p>人类的记忆遵循艾宾浩斯遗忘曲线——学完一个新词后，记忆会随时间衰减，但<strong>每次成功回忆都会延长下次遗忘的时间</strong>。</p>
+<p>SM-2 算法的核心逻辑：</p>
+<ul>
+  <li>每个单词独立记录：复习间隔（interval）、复习次数（repetitions）、难易系数（easeFactor）</li>
+  <li>第一次复习通过：下次复习安排在 <strong>1 天后</strong></li>
+  <li>第二次复习通过：下次复习安排在 <strong>6 天后</strong></li>
+  <li>之后每次通过：间隔 = 上次间隔 × 难易系数（约 2.5 倍递增）</li>
+  <li>回答"Again"（完全忘了）：间隔重置为 1 天，从头开始</li>
+</ul>
+<p>这意味着你轻松记住的词会越来越少出现，而你总是搞混的词会反复出现，直到真正掌握。</p>
+
+<h4>单词的掌握阶段</h4>
+<table class="mastery-table">
+  <tr><th>阶段</th><th>条件</th><th>含义</th></tr>
+  <tr><td style="color:#6366f1">New（新）</td><td>从未复习过（repetitions = 0）</td><td>刚加入，还没见过面</td></tr>
+  <tr><td style="color:#d97706">Learning（学习中）</td><td>复习间隔 &lt; 7 天</td><td>还不稳定，需要频繁复习</td></tr>
+  <tr><td style="color:#059669">Young（巩固中）</td><td>复习间隔 7～20 天</td><td>开始记住了，复习频率降低</td></tr>
+  <tr><td style="color:#047857">Mature（已掌握）</td><td>复习间隔 ≥ 21 天</td><td>记忆稳定，偶尔复习即可</td></tr>
+</table>
+
+<h3 id="s5-2">如何使用闪卡</h3>
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><p>点击左侧导航 <strong>Review</strong>，页面显示今天待复习的单词数量。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body"><p>点击 <strong>Begin Session</strong> 开始复习。单词顺序已随机打乱。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p><strong>卡片正面</strong>：看到单词，回想它的意思（默默在心里回忆，不要着急翻牌）。准备好后点击 <strong>Show Answer</strong>。</p>
+      <div class="tip">
+        <span class="callout-title">💡 关键技巧</span>
+        在翻牌前，<strong>一定要在脑子里主动回忆</strong>，哪怕只记住一点点也好。主动回忆（Retrieval Practice）是记忆加固的核心机制，被动看答案收效甚微。
+      </div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p><strong>卡片背面</strong>：显示单词的全部释义（包括所有义项）。对比你的回忆，诚实评估自己的表现，然后点击对应的评分按钮。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p>复习完所有单词后，显示本次 Session 的统计：各评分的数量分布。</p>
+    </div>
+  </div>
+</div>
+
+<h3 id="s5-3">四个评分按钮详解</h3>
+<div class="rate-grid">
+  <div class="rate-card rate-again">
+    <div class="rate-name">Again</div>
+    <div class="rate-sub">完全不记得<br>明天再来</div>
+  </div>
+  <div class="rate-card rate-hard">
+    <div class="rate-name">Hard</div>
+    <div class="rate-sub">有点印象<br>但想了很久才想起来</div>
+  </div>
+  <div class="rate-card rate-good">
+    <div class="rate-name">Good</div>
+    <div class="rate-sub">正确回忆<br>有些费力</div>
+  </div>
+  <div class="rate-card rate-easy">
+    <div class="rate-name">Easy</div>
+    <div class="rate-sub">秒懂，毫无压力<br>很久后再见</div>
+  </div>
+</div>
+
+<p>每个按钮下方的小字（如"in 3 days"、"in 2 wk"）显示如果你按这个评分，下次复习会安排在什么时候。</p>
+
+<h4>评分诚实性很重要</h4>
+<ul>
+  <li>如果你勉强想出来了，应该按 <strong>Hard</strong>，不要按 Good——诚实才能让算法精准</li>
+  <li>如果完全想不起来，一定按 <strong>Again</strong>，不要为了"让数字好看"按 Good</li>
+  <li>算法会自动照顾你：Again 的词明天还会出现，直到你真正记住</li>
+</ul>
+
+<div class="warn">
+  <span class="callout-title">⚠️ 复习时间建议</span>
+  每天的复习量与你之前加词的速度正相关。如果某天复习量突然暴增（>50词），说明前段时间加词太激进，可以适当减缓词书的每日释放量。
+</div>
+
+<div class="divider"></div>
+
+<!-- 六、Dashboard -->
+<h2 id="s6">六、Dashboard 总览</h2>
+<p>Dashboard 是你每天打开软件后的第一眼。</p>
+
+<table>
+  <tr><th>卡片</th><th>内容</th></tr>
+  <tr><td>🔥 Day Streak</td><td>连续签到天数。点击 <strong>Check In</strong> 完成今天的打卡（每天只能打卡一次，刷新后状态保持）</td></tr>
+  <tr><td>📚 Total Words</td><td>My Words 里目前的总单词数</td></tr>
+  <tr><td>⏰ Due Today</td><td>今天需要复习的单词数量。旁边有 <strong>Review Now</strong> 快捷按钮</td></tr>
+  <tr><td>✅ Mastered</td><td>已进入 Mature 阶段（间隔≥21天）的单词数，代表真正掌握的词汇量</td></tr>
+</table>
+
+<p>页面下方「Recently Added」展示你最近加入的 12 个单词，方便快速回顾。</p>
+
+<div class="tip">
+  <span class="callout-title">💡 每天来 Dashboard 做的事</span>
+  打卡 Check In → 看 Due Today 数量 → 点 Review Now 复习 → 完成后看 Mastered 增长
+</div>
+
+<div class="divider"></div>
+
+<!-- 七、进度追踪 -->
+<h2 id="s7">七、进度追踪（Progress）</h2>
+
+<h3>单词掌握分布</h3>
+<p>四条横向进度条，分别显示处于 New / Learning / Young / Mature 阶段的单词数量及占比。健康的学习状态是：Learning 和 Young 阶段占多数，Mature 随时间逐渐增加。</p>
+
+<h3>打卡热力图</h3>
+<p>显示最近 12 周（84 天）的打卡记录，格子越深蓝代表当天已打卡。类似 GitHub 的贡献热力图。一行 = 一周，从左到右是时间顺序。</p>
+
+<h3>Upcoming Reviews（即将复习列表）</h3>
+<p>显示接下来最近要复习的 10 个单词，附带标签：</p>
+<ul>
+  <li><span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600">X 天 overdue</span> — 已经超期未复习（尽快去复习！）</li>
+  <li><span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600">Today</span> — 今天到期</li>
+  <li><span style="background:#ecfdf5;color:#059669;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600">in N days</span> — N 天后到期</li>
+</ul>
+
+<div class="divider"></div>
+
+<!-- 八、每日推荐流程 -->
+<h2 id="s8">八、每日推荐学习流程</h2>
+<p>以下是一套经过验证的高效学习流程，全程约 <strong>20～30 分钟</strong>，适合每天坚持：</p>
+
+<div class="routine-block">
+  <div class="routine-time">第 1 步<br>2 分钟</div>
+  <div class="routine-body">
+    <strong>打开软件，打卡签到</strong>
+    进入 Dashboard，点击 Check In。查看今天有多少词需要复习（Due Today）。
+  </div>
+</div>
+
+<div class="routine-block">
+  <div class="routine-time">第 2 步<br>5～15 分钟</div>
+  <div class="routine-body">
+    <strong>完成今日复习（Review）</strong>
+    点击 Review Now 进入复习。对每张卡片：先回忆，再翻牌，诚实评分。<br>
+    复习量：通常 10～30 词，若超过 50 词说明积压了，连续几天清空就会好。
+  </div>
+</div>
+
+<div class="routine-block">
+  <div class="routine-time">第 3 步<br>5 分钟</div>
+  <div class="routine-body">
+    <strong>录入今日新词</strong>
+    把今天课堂、阅读、刷题中遇到的生词加入 My Words。建议 5～20 个为宜。<br>
+    词书用户：新词已由词书自动释放，这步可以补充手动遇到的额外词汇。
+  </div>
+</div>
+
+<div class="routine-block">
+  <div class="routine-time">第 4 步<br>10 分钟</div>
+  <div class="routine-body">
+    <strong>生成并阅读有声文章（Generate Article）</strong>
+    选择 Today All（今天的新词+到期词）→ 主题随意或设定 → 生成 Medium 文章。<br>
+    先静读，再开 0.8x 语速跟读，注意高亮词汇在语境中的用法。
+  </div>
+</div>
+
+<div class="routine-block">
+  <div class="routine-time">可选加餐</div>
+  <div class="routine-body">
+    <strong>精听朗读 + 跟读</strong>
+    将语速调到 1.0x 或 1.2x，跟着录音默读或大声朗读，练习英语语感和发音。
+  </div>
+</div>
+
+<div class="info">
+  <span class="callout-title">✅ 坚持的关键</span>
+  每天 20 分钟、连续 30 天，比每周一次 3 小时学得更牢固。Dashboard 的 Streak 连续天数就是你最好的激励——别让那根链子断掉。
+</div>
+
+<div class="divider"></div>
+
+<!-- 九、常见问题 -->
+<h2 id="s9">九、常见问题</h2>
+
+<h3>Q：生成文章时报错"API 错误 401"</h3>
+<p><strong>原因</strong>：API Key 不正确或已过期。<br>
+<strong>解决</strong>：重新到对应平台复制 Key，打开 Settings → 清空 API Key 框 → 重新粘贴 → Save Settings。</p>
+
+<h3>Q：生成文章时报错"API 错误 429"</h3>
+<p><strong>原因</strong>：请求太频繁（速率限制），或账户余额不足。<br>
+<strong>解决</strong>：等 30 秒后重试；或登录平台检查账户余额并充值。</p>
+
+<h3>Q：生成文章时报错 CORS 或 Failed to fetch</h3>
+<p><strong>原因</strong>：部分 AI 接口不允许从浏览器本地文件（file://协议）直接调用。<br>
+<strong>解决方案（按难度排序）</strong>：</p>
+<ol>
+  <li>换一个接口试试（DeepSeek 对浏览器调用最友好）</li>
+  <li>换用 Chrome 并允许跨域：在桌面新建 Chrome 快捷方式，在"目标"末尾加上 <code>--disable-web-security --user-data-dir="C:\chrome-dev"</code>，然后用这个快捷方式打开</li>
+  <li>用 VS Code 的 Live Server 插件打开项目（会变成 http://localhost 协议，大多数 API 都接受）</li>
+</ol>
+
+<h3>Q：朗读功能没有声音 / 声音列表是空的</h3>
+<p><strong>原因</strong>：浏览器语音引擎还没初始化完毕，或系统没有安装英语语音包。<br>
+<strong>解决</strong>：刷新页面重试；如果 Windows 系统没有英语语音，去「设置 → 时间和语言 → 语言 → 添加语言 → English (United States)」，安装后重启浏览器。</p>
+
+<h3>Q：关掉浏览器后数据还在吗？</h3>
+<p>数据存在浏览器的 localStorage 里，只要不清除浏览器数据，关闭后重新打开数据都还在。建议定期在 Settings → Export Data 备份一份 JSON 文件到本地。</p>
+
+<h3>Q：换了新电脑 / 新浏览器怎么迁移数据？</h3>
+<div class="steps">
+  <div class="step"><div class="step-num">1</div><div class="step-body"><p>在旧浏览器里：Settings → <strong>↓ Export Data</strong>，下载 JSON 文件。</p></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><p>在新电脑/浏览器打开软件后，打开浏览器开发者工具（F12）→ Console 标签页。</p></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body">
+    <p>粘贴以下代码（将 <code>JSON_CONTENT_HERE</code> 替换为 JSON 文件内容）：</p>
+    <pre>const data = JSON_CONTENT_HERE;
+localStorage.setItem('vm_words', JSON.stringify(data.words));
+localStorage.setItem('vm_checkins', JSON.stringify(data.checkIns));
+localStorage.setItem('vm_wordbooks', JSON.stringify(data.wordBooks || []));
+localStorage.setItem('vm_settings', JSON.stringify(data.settings));
+location.reload();</pre>
+  </div></div>
+</div>
+
+<h3>Q：词书里有几千个词，localStorage 放得下吗？</h3>
+<p>localStorage 有约 5MB 的限制。5000 个词（含释义）大约占 500KB～1MB，完全没问题。如果导入超大词书报错，可以把词书拆成多个部分分别导入。</p>
+
+<h3>Q：可以同时用多个 AI 接口吗？</h3>
+<p>目前 Settings 只存一个激活的接口。如果想临时换接口，进 Settings 修改 Provider 和 Key 即可，不影响已有数据。</p>
+
+<div class="divider"></div>
+
+<!-- 十、进阶技巧 -->
+<h2 id="s10">十、进阶使用技巧</h2>
+
+<h3>技巧 1：给高频搞混的词加对比释义</h3>
+<p>对容易混淆的词对（如 affect/effect、principle/principal），在 My Words 里都加上，并在释义中注明区别：</p>
+<pre>affect : (v.) to have an effect on（动词，影响）; 注意：不要与名词 effect 搞混
+effect : (n.) a result or impact（名词，效果/影响）</pre>
+<p>这样生成的文章里两个词会同时出现，在语境中自然区分。</p>
+
+<h3>技巧 2：利用 Topic 生成特定场景的文章</h3>
+<p>把生词和特定话题绑定，特别适合备考时的专题积累：</p>
+<ul>
+  <li>Topic: <code>environmental policy and climate agreements</code>（环境类作文备考）</li>
+  <li>Topic: <code>medical research and public health</code>（医学类阅读）</li>
+  <li>Topic: <code>entrepreneurship and startup culture</code>（商业类）</li>
+  <li>Topic: <code>education technology and pedagogy</code>（教育类）</li>
+</ul>
+
+<h3>技巧 3：词书排序策略</h3>
+<p>如果你的词表是考试词汇，建议导入前先排序：</p>
+<ul>
+  <li><strong>按字母顺序</strong>：记一个词时能联想到同字母的词群</li>
+  <li><strong>按词频从高到低</strong>：先学最常见的词，性价比高</li>
+  <li><strong>按话题分组</strong>：将同一主题词汇放在一起，有助于联想记忆</li>
+</ul>
+
+<h3>技巧 4：调整词书每日目标</h3>
+<p>如果发现每天复习量太大（积压严重），说明每日新词太多。可以暂停当前词书（点 ⏸），等积压的复习清空后再恢复。不要硬撑——复习质量比数量更重要。</p>
+
+<h3>技巧 5：生成文章后存档阅读</h3>
+<p>浏览器有「打印为 PDF」功能（Ctrl+P → 另存为 PDF）。把特别好的文章存为 PDF，睡前可以离线阅读，无需网络。</p>
+
+<h3>技巧 6：巧用 GRE 级别拓展词汇边界</h3>
+<p>对于已经有六级 / 雅思基础的学习者，偶尔把 Level 设为 GRE / Academic，AI 会用更精妙的句式和词汇，让文章本身也成为学习素材（文章中非高亮词汇的精妙用法同样值得品味）。</p>
+
+<div class="divider"></div>
+
+<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:14px;">
+  <p>VocabMaster 使用指南 · 如有问题或功能建议，可向开发者反馈</p>
+  <p style="margin-top:8px">祝学习顺利 🎓</p>
+</div>
+
+<a class="back-top" href="#">↑ 回到顶部</a>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>VocabMaster</title>
+
+  <!-- PWA / iOS Web App -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VocabMaster">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">&#128218;</span>
+      <span class="logo-text">VocabMaster</span>
+    </div>
+    <ul class="nav-links">
+      <li><a class="nav-link active" data-view="dashboard">
+        <span>&#127968;</span> Dashboard
+      </a></li>
+      <li><a class="nav-link" data-view="words">
+        <span>&#128221;</span> My Words
+      </a></li>
+      <li><a class="nav-link" data-view="article">
+        <span>&#128214;</span> Generate Article
+      </a></li>
+      <li><a class="nav-link" data-view="wordbooks">
+        <span>&#128218;</span> Word Books
+      </a></li>
+      <li><a class="nav-link" data-view="review">
+        <span>&#128260;</span> Review
+        <span class="badge" id="review-badge"></span>
+      </a></li>
+      <li><a class="nav-link" data-view="progress">
+        <span>&#128202;</span> Progress
+      </a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="btn-settings" id="btn-settings">&#9881; Settings</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="view active" id="view-dashboard">
+      <div class="view-header">
+        <h1>Dashboard</h1>
+        <p class="view-subtitle" id="today-date"></p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" id="checkin-card">
+          <div class="stat-icon">&#128293;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="streak-count">0</div>
+            <div class="stat-label">Day Streak</div>
+          </div>
+          <button class="btn-checkin" id="btn-checkin">Check In</button>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#128218;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="total-words">0</div>
+            <div class="stat-label">Total Words</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#9200;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="due-today">0</div>
+            <div class="stat-label">Due Today</div>
+          </div>
+          <button class="btn-secondary btn-small" id="btn-start-review">Review Now</button>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#9989;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="mastered-words">0</div>
+            <div class="stat-label">Mastered</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <h2>Recently Added</h2>
+        <div id="recent-words-list" class="word-chips">
+          <span class="empty-hint">No words yet — go to "My Words" to add some!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WORDS ===== -->
+    <div class="view" id="view-words">
+      <div class="view-header">
+        <h1>My Words</h1>
+        <button class="btn-primary" id="btn-show-add-word">+ Add Words</button>
+      </div>
+      <div class="add-word-panel" id="add-word-panel">
+        <div class="section-card">
+          <h2>Add New Words</h2>
+          <p class="hint">One word per line. Single meaning: <code>word : definition</code> &nbsp;|&nbsp; Multiple meanings: <code>bank : (n.) river bank; (v.) to tilt</code></p>
+          <textarea id="word-input" rows="6" placeholder="ephemeral&#10;ubiquitous : present everywhere&#10;bank : (n.) financial institution; (n.) river bank; (v.) to tilt an aircraft&#10;sanction : (n.) official approval; (v.) to penalise"></textarea>
+          <div class="form-actions">
+            <button class="btn-secondary" id="btn-cancel-add">Cancel</button>
+            <button class="btn-primary" id="btn-add-words">Add Words</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="words-toolbar">
+          <input type="text" class="search-input" id="word-search" placeholder="&#128269; Search words...">
+          <select class="filter-select" id="word-filter">
+            <option value="all">All Words</option>
+            <option value="new">New</option>
+            <option value="learning">Learning</option>
+            <option value="young">Young</option>
+            <option value="mature">Mature</option>
+          </select>
+          <button class="btn-secondary btn-small" id="btn-group-date" title="Toggle date grouping">&#128197; By Date</button>
+        </div>
+        <div id="words-table-container">
+          <table class="words-table" id="words-table">
+            <thead>
+              <tr>
+                <th>Word</th>
+                <th>Definition</th>
+                <th>Added</th>
+                <th>Next Review</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="words-table-body"></tbody>
+          </table>
+          <div id="no-words-msg" class="empty-state">
+            <p>&#128221; No words found. Add some to get started!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ARTICLE ===== -->
+    <div class="view" id="view-article">
+      <div class="view-header">
+        <h1>Generate Article</h1>
+      </div>
+      <div class="article-layout">
+        <div class="article-config section-card">
+          <h2>Settings</h2>
+          <div class="form-group">
+            <label>Words to Include</label>
+            <div class="word-selection-actions">
+              <button class="btn-text" id="btn-select-all">All</button>
+              <button class="btn-text" id="btn-select-none">None</button>
+              <button class="btn-text" id="btn-select-today-new">Today New</button>
+              <button class="btn-text" id="btn-select-today-due">Today Due</button>
+              <button class="btn-text" id="btn-select-today-all">Today All</button>
+            </div>
+            <div id="article-word-list" class="word-checkboxes">
+              <span class="empty-hint">Add words first</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Topic <span class="opt">(optional)</span></label>
+            <input type="text" id="article-topic" placeholder="e.g., climate change, AI, history">
+          </div>
+          <div class="form-group">
+            <label>Length</label>
+            <select id="article-length">
+              <option value="300">Short (~300 words)</option>
+              <option value="500" selected>Medium (~500 words)</option>
+              <option value="700">Long (~700 words)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Level</label>
+            <select id="article-level">
+              <option value="cet6">CET-6</option>
+              <option value="ielts" selected>IELTS 7-8 / Graduate</option>
+              <option value="gre">GRE / Academic</option>
+            </select>
+          </div>
+          <button class="btn-primary btn-full" id="btn-generate-article">&#10024; Generate Article</button>
+        </div>
+
+        <div class="article-display section-card">
+          <div id="article-empty" class="empty-state">
+            <p>&#128214; Configure settings and click<br>"Generate Article" to create a<br>personalized reading passage.</p>
+          </div>
+          <div id="article-loading" class="loading-state" style="display:none">
+            <div class="spinner"></div>
+            <p>Generating your article...</p>
+          </div>
+          <div id="article-content" style="display:none">
+            <h2 class="article-title" id="article-title"></h2>
+            <div class="tts-controls">
+              <button class="tts-btn" id="tts-play">&#9654; Play</button>
+              <button class="tts-btn" id="tts-pause" disabled>&#9646;&#9646; Pause</button>
+              <button class="tts-btn" id="tts-stop" disabled>&#9632; Stop</button>
+              <div class="tts-speed-wrap">
+                <span>Speed:</span>
+                <input type="range" id="tts-speed" min="0.5" max="2" step="0.1" value="1">
+                <span id="tts-speed-val">1.0x</span>
+              </div>
+              <select id="tts-voice" class="voice-select" title="Select voice"></select>
+            </div>
+            <div class="article-legend" id="article-legend" style="display:none">
+              <span class="legend-item"><span class="legend-dot legend-new"></span>New today</span>
+              <span class="legend-item"><span class="legend-dot legend-due"></span>Due for review</span>
+              <span class="legend-item"><span class="legend-dot legend-reviewed"></span>Established</span>
+            </div>
+            <div class="article-body" id="article-body"></div>
+            <div class="article-footer">
+              <h3>Target Words in This Article</h3>
+              <div id="article-target-words" class="word-chips"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WORD BOOKS ===== -->
+    <div class="view" id="view-wordbooks">
+      <div class="view-header">
+        <h1>Word Books</h1>
+        <button class="btn-primary" id="btn-new-wordbook">+ New Plan</button>
+      </div>
+
+      <!-- Create panel -->
+      <div class="add-word-panel" id="wordbook-create-panel">
+        <div class="section-card">
+          <h2>Create Study Plan</h2>
+          <div class="wb-form-grid">
+            <div class="form-group">
+              <label>Plan Name</label>
+              <input type="text" id="wb-name" placeholder="e.g., 考研词汇5000, IELTS High-frequency">
+            </div>
+            <div class="form-group">
+              <label>Daily New Words</label>
+              <div class="goal-btns">
+                <button class="goal-btn" data-goal="20">20</button>
+                <button class="goal-btn" data-goal="30">30</button>
+                <button class="goal-btn active" data-goal="50">50</button>
+                <button class="goal-btn" data-goal="100">100</button>
+                <input type="number" id="wb-daily-goal" min="1" max="500" value="50" placeholder="自定义">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Import Words</label>
+            <div class="import-tabs">
+              <button class="import-tab active" data-tab="file">&#128196; Upload File</button>
+              <button class="import-tab" data-tab="paste">&#128203; Paste Text</button>
+            </div>
+
+            <div id="import-tab-file" class="import-tab-pane">
+              <div class="file-drop-zone" id="file-drop-zone">
+                <div style="font-size:36px">&#128194;</div>
+                <p>拖拽 Excel / CSV 文件到此处，或 <label for="file-input" class="link-label">点击选择</label></p>
+                <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
+                <p class="hint">格式：第一列 = 单词，第二列 = 释义1，第三列 = 释义2（可选）
+                  &nbsp;<button class="btn-text" id="btn-download-template">&#8681; 下载模版</button></p>
+              </div>
+              <div id="file-preview" class="file-preview"></div>
+            </div>
+
+            <div id="import-tab-paste" class="import-tab-pane" style="display:none">
+              <p class="hint">每行一个单词。格式：<code>word : 释义1; 释义2</code></p>
+              <textarea id="wb-paste-input" rows="8"
+                placeholder="ephemeral&#10;ubiquitous : 无处不在&#10;bank : (n.) 河岸; (n.) 银行; (v.) 使飞机倾斜&#10;..."></textarea>
+            </div>
+          </div>
+
+          <div class="wb-preview-info" id="wb-preview-info"></div>
+
+          <div class="form-actions">
+            <button class="btn-secondary" id="btn-cancel-wordbook">Cancel</button>
+            <button class="btn-primary" id="btn-create-wordbook">&#9654; Start Plan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Word Books List -->
+      <div id="wordbooks-list"></div>
+      <div id="no-wordbooks" class="section-card empty-state">
+        <p>&#128218; 还没有词书计划。<br>创建一个计划，系统每天自动释放新词到「My Words」！</p>
+      </div>
+    </div>
+
+    <!-- ===== REVIEW ===== -->
+    <div class="view" id="view-review">
+      <div class="view-header">
+        <h1>Review Session</h1>
+      </div>
+      <div id="review-start" class="section-card review-center">
+        <div class="review-hero-icon">&#127919;</div>
+        <h2>Ready to Review?</h2>
+        <p>You have <strong id="review-count">0</strong> words due today.</p>
+        <button class="btn-primary btn-lg" id="btn-begin-review">Begin Session</button>
+        <p class="hint">Based on the Ebbinghaus forgetting curve (SM-2 algorithm).<br>Rate each card honestly for optimal scheduling.</p>
+      </div>
+      <div id="review-session" style="display:none">
+        <div class="review-progress-bar-wrap">
+          <div class="review-progress-bar">
+            <div class="review-progress-fill" id="review-progress-fill"></div>
+          </div>
+          <span id="review-progress-text">0 / 0</span>
+        </div>
+        <div class="flashcard-wrap">
+          <div class="flashcard" id="flashcard">
+            <div class="card-front" id="card-front">
+              <div class="card-word" id="card-word"></div>
+              <button class="btn-flip" id="btn-flip">Show Answer</button>
+            </div>
+            <div class="card-back" id="card-back">
+              <div class="card-word" id="card-word-back"></div>
+              <div class="card-definition" id="card-definition"></div>
+              <p class="rate-label">How well did you remember?</p>
+              <div class="rate-buttons">
+                <button class="rate-btn rate-again" data-quality="0">
+                  Again<span class="rate-sub">&lt;1 day</span>
+                </button>
+                <button class="rate-btn rate-hard" data-quality="2">
+                  Hard<span class="rate-sub">slight difficulty</span>
+                </button>
+                <button class="rate-btn rate-good" data-quality="3">
+                  Good<span class="rate-sub">correct recall</span>
+                </button>
+                <button class="rate-btn rate-easy" data-quality="5">
+                  Easy<span class="rate-sub">perfect</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="review-complete" class="section-card review-center" style="display:none">
+        <div class="review-hero-icon">&#127881;</div>
+        <h2>Session Complete!</h2>
+        <div class="review-summary" id="review-summary"></div>
+        <div class="review-complete-actions">
+          <button class="btn-secondary" id="btn-review-again">&#128260; Review Again</button>
+          <button class="btn-spell-launch" id="btn-start-spelling">&#9999;&#65039; Spelling Test</button>
+          <button class="btn-primary" id="btn-back-dashboard">&#127968; Dashboard</button>
+        </div>
+      </div>
+
+      <!-- Spelling Test -->
+      <div id="review-spelling" style="display:none">
+        <div class="section-card review-center">
+          <div class="review-hero-icon">&#9999;&#65039;</div>
+          <h2>Spelling Test</h2>
+          <p class="spell-header" id="spell-header">Word 1 of 0</p>
+          <div class="spell-progress-bar-wrap">
+            <div class="review-progress-bar">
+              <div class="review-progress-fill" id="spell-progress-fill"></div>
+            </div>
+            <span id="spell-progress-text">0 / 0</span>
+          </div>
+          <div class="spell-hint-box">
+            <div class="spell-hint-label">Definition</div>
+            <div class="spell-def" id="spell-def"></div>
+            <div class="spell-example" id="spell-example"></div>
+            <div class="spell-phonetic-toggle" id="spell-phonetic-toggle">&#128266; Show phonetic hint</div>
+          </div>
+          <div class="spell-input-wrap">
+            <input type="text" id="spell-input" class="spell-input" placeholder="Type the word..." autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+          <div class="spell-feedback" id="spell-feedback"></div>
+          <div class="spell-actions">
+            <button class="btn-secondary" id="btn-spell-skip">Skip</button>
+            <button class="btn-primary" id="btn-spell-check">Check</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spelling Results -->
+      <div id="review-spell-results" style="display:none">
+        <div class="section-card review-center">
+          <div class="review-hero-icon">&#128202;</div>
+          <h2>Spelling Results</h2>
+          <div id="spell-results-body" class="spell-results"></div>
+          <div class="review-complete-actions" style="margin-top:24px">
+            <button class="btn-secondary" id="btn-spell-retry">&#128260; Try Again</button>
+            <button class="btn-primary" id="btn-spell-done">&#127968; Dashboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROGRESS ===== -->
+    <div class="view" id="view-progress">
+      <div class="view-header">
+        <h1>My Progress</h1>
+      </div>
+      <div class="progress-top-grid">
+        <div class="section-card">
+          <h2>Word Mastery</h2>
+          <div class="mastery-bars">
+            <div class="mastery-row">
+              <span class="mastery-label mastery-new-label">New</span>
+              <div class="mastery-track"><div class="mastery-fill mastery-new-fill" id="bar-new"></div></div>
+              <span class="mastery-num" id="cnt-new">0</span>
+            </div>
+            <div class="mastery-row">
+              <span class="mastery-label mastery-learning-label">Learning</span>
+              <div class="mastery-track"><div class="mastery-fill mastery-learning-fill" id="bar-learning"></div></div>
+              <span class="mastery-num" id="cnt-learning">0</span>
+            </div>
+            <div class="mastery-row">
+              <span class="mastery-label mastery-young-label">Young</span>
+              <div class="mastery-track"><div class="mastery-fill mastery-young-fill" id="bar-young"></div></div>
+              <span class="mastery-num" id="cnt-young">0</span>
+            </div>
+            <div class="mastery-row">
+              <span class="mastery-label mastery-mature-label">Mature</span>
+              <div class="mastery-track"><div class="mastery-fill mastery-mature-fill" id="bar-mature"></div></div>
+              <span class="mastery-num" id="cnt-mature">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2>Check-in Streak</h2>
+          <div class="streak-hero">
+            <span class="streak-big" id="progress-streak">0</span>
+            <span class="streak-unit">days</span>
+          </div>
+          <h3 style="margin-bottom:10px;color:#666;font-weight:500;">Last 12 Weeks</h3>
+          <div id="heatmap-container" class="heatmap"></div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <span class="heatmap-cell level-0"></span>
+            <span class="heatmap-cell level-1"></span>
+            <span class="heatmap-cell level-2"></span>
+            <span class="heatmap-cell level-3"></span>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <h2>Upcoming Reviews</h2>
+        <div id="upcoming-reviews" class="upcoming-list"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== SETTINGS MODAL ===== -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="modal-close" id="modal-close">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>AI Provider</label>
+          <select id="settings-provider">
+            <option value="deepseek">DeepSeek（推荐，国内可用）</option>
+            <option value="doubao">豆包 Doubao（字节跳动，国内可用）</option>
+            <option value="qwen">通义千问 Qwen（阿里云，国内可用）</option>
+            <option value="zhipu">智谱 GLM（国内可用）</option>
+            <option value="kimi">Kimi / Moonshot（国内可用）</option>
+            <option value="anthropic">Claude（Anthropic，需 VPN）</option>
+            <option value="openai">OpenAI GPT-4o（需 VPN）</option>
+            <option value="custom">自定义 Custom（OpenAI 兼容接口）</option>
+          </select>
+        </div>
+        <div class="form-group" id="group-model">
+          <label id="label-model">Model / Endpoint ID</label>
+          <input type="text" id="settings-model" placeholder="">
+          <p class="hint" id="hint-model"></p>
+        </div>
+        <div class="form-group" id="group-custom-url" style="display:none">
+          <label>自定义 API URL</label>
+          <input type="text" id="settings-custom-url" placeholder="https://your-api.com/v1/chat/completions">
+          <p class="hint">必须是 OpenAI 兼容的 /chat/completions 接口</p>
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <div class="api-key-wrap">
+            <input type="password" id="settings-api-key" placeholder="Paste your API key here">
+            <button class="btn-text" id="btn-toggle-key">Show</button>
+          </div>
+          <p class="hint">仅存储于本地浏览器，不会发送到除 AI 接口提供商以外的任何地方。</p>
+        </div>
+        <!-- ===== SYNC SETTINGS ===== -->
+        <div class="sync-section">
+          <div class="sync-header" id="sync-header" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
+            <h3 style="margin:0;font-size:15px;color:var(--primary)">&#128260; Cross-Device Sync</h3>
+            <span id="sync-toggle-icon" style="font-size:18px;color:var(--text-muted);transition:transform .2s">&#9660;</span>
+          </div>
+          <div id="sync-body" style="display:none;margin-top:12px">
+            <p class="hint" style="margin-bottom:12px">Sync your vocabulary data between PC and iPhone via Supabase (free). <a href="https://supabase.com" target="_blank" style="color:var(--primary)">Create a free account →</a></p>
+            <div class="form-group">
+              <label>Supabase Project URL</label>
+              <input type="text" id="settings-supabase-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+              <p class="hint">From your Supabase project: Settings → API → Project URL</p>
+            </div>
+            <div class="form-group">
+              <label>Supabase Anon Key</label>
+              <div class="api-key-wrap">
+                <input type="password" id="settings-supabase-key" placeholder="Paste your anon/public key">
+                <button class="btn-text" id="btn-toggle-supabase-key">Show</button>
+              </div>
+              <p class="hint">From: Settings → API → Project API keys → <code>anon public</code></p>
+            </div>
+            <div class="form-group">
+              <label>Sync Passphrase</label>
+              <input type="password" id="settings-sync-passphrase" placeholder="Create a shared passphrase (e.g. my-vocab-secret)">
+              <p class="hint">Same passphrase on all devices = same data. Keep it private.</p>
+            </div>
+            <div class="sync-actions" style="display:flex;gap:10px;align-items:center;margin-top:4px">
+              <button class="btn-primary" id="btn-sync-now" style="flex:1">&#10227; Sync Now</button>
+              <span id="sync-status" style="font-size:12px;color:var(--text-muted)"></span>
+            </div>
+            <p class="hint" style="margin-top:8px">After saving settings, run the SQL in <code>supabase-schema.sql</code> on your Supabase project.</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Daily Review Goal</label>
+          <input type="number" id="settings-daily-goal" min="5" max="200" value="20"> words/day
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-footer-left">
+          <button class="btn-text btn-export" id="btn-export">&#8681; Export Data</button>
+          <button class="btn-danger" id="btn-clear-data">&#128465; Clear All</button>
+        </div>
+        <button class="btn-primary" id="btn-save-settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div id="word-tooltip" class="word-tooltip" style="display:none"></div>
+
+  <!-- SheetJS for Excel import (requires internet on first load) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/sm2.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Register PWA service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function(err) {
+        console.log('SW registration failed (non-HTTPS?):', err.message);
+      });
+    }
+  </script>
+</body>
+</html>

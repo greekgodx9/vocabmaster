@@ -1,0 +1,21 @@
+{
+  "name": "vocabmaster",
+  "version": "1.0.0",
+  "description": "AI-powered English vocabulary learning app with SM-2 spaced repetition",
+  "private": true,
+  "scripts": {
+    "build": "node build-www.js",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync",
+    "cap:open:ios": "npx cap open ios",
+    "cap:update": "npm run build && npx cap sync",
+    "serve": "npx serve www -l 3000"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  }
+}
