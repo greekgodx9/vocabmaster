@@ -66,9 +66,10 @@ const API = {
 
   // ── Prompt builder ─────────────────────────────────────────────────────
   LEVEL_PROMPTS: {
-    cet6:  'CET-6 (Chinese College English Test Band 6)',
+    b1:   'B1-B2 Intermediate / Everyday English — clear, accessible, welcoming to learners',
+    cet6: 'CET-6 (College English Test Band 6)',
     ielts: 'IELTS Band 7-8 / Graduate-level English',
-    gre:   'GRE / Advanced Academic English',
+    gre:  'GRE / Advanced Academic English',
   },
 
   buildPrompt(words, { length, level, topic }) {
