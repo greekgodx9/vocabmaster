@@ -43,7 +43,7 @@ function navigate(viewName) {
 
   if (viewName === 'dashboard')  renderDashboard();
   if (viewName === 'words')      renderWords();
-  if (viewName === 'article')    renderArticleWordList();
+  if (viewName === 'article')    { renderArticleWordList(); updateArticleVipGate(); }
   if (viewName === 'wordbooks')  renderWordBooks();
   if (viewName === 'review')     renderReviewStart();
   if (viewName === 'progress')   renderProgress();
@@ -166,6 +166,20 @@ function renderWords() {
 }
 
 // ── ARTICLE VIEW ───────────────────────────────────────────────────────────
+function updateArticleVipGate() {
+  const btn = $('btn-generate-article');
+  if (!btn) return;
+  if (VIP.isActive()) {
+    btn.textContent = '✨ Generate Article';
+    btn.disabled = false;
+    btn.style.opacity = '';
+  } else {
+    btn.textContent = '🔒 Generate Article — VIP Required';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  }
+}
+
 function renderArticleWordList() {
   const words = Storage.getWords();
   const container = $('article-word-list');
@@ -989,14 +1003,27 @@ function vipRequired(feature) {
 function updateSyncStatus() {
   const el = $('sync-status');
   const badge = $('account-badge');
+  const btn = $('btn-sync-now');
   if (!el) return;
   const s = Storage.getSettings();
+
+  // VIP check — lock sync button if expired
+  if (!VIP.isActive()) {
+    if (btn) { btn.textContent = '🔒 Sync — VIP Required'; btn.disabled = true; btn.style.opacity = '0.5'; }
+    el.textContent = 'VIP required for cloud sync';
+    el.style.color = '#ef4444';
+    if (badge) { badge.textContent = 'VIP expired'; badge.style.background = '#fee2e2'; badge.style.color = '#991b1b'; }
+    return;
+  }
+
   if (!s.syncId || !s.syncPassphrase) {
+    if (btn) { btn.textContent = '🔄 Log In & Sync'; btn.disabled = false; btn.style.opacity = ''; }
     el.textContent = 'Enter username & password to log in';
     el.style.color = 'var(--text-muted)';
     if (badge) { badge.textContent = 'Not logged in'; badge.style.background = '#f1f5f9'; badge.style.color = 'var(--text-muted)'; }
     return;
   }
+  if (btn) { btn.textContent = '🔄 Log In & Sync'; btn.disabled = false; btn.style.opacity = ''; }
   el.textContent = 'Ready — tap to sync ✓';
   el.style.color = '#22c55e';
   if (badge) { badge.textContent = '✓ ' + s.syncId; badge.style.background = '#dcfce7'; badge.style.color = '#15803d'; }
