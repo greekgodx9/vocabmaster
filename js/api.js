@@ -89,23 +89,26 @@ const API = {
     const multiNote = hasMultiMeaning ? `
 Polysemy note: Words marked ⟨multiple senses⟩ are common words with less-obvious meanings. For these words, DELIBERATELY choose a less familiar sense (e.g., use "sanction" to mean "to penalise" not just "to approve", or "bank" as a verb meaning to tilt). This is the "熟词生义" technique — encountering familiar words in unexpected usage is one of the most powerful ways to deepen vocabulary.` : '';
 
-    return `You are an expert English language educator creating reading materials for advanced learners.
+    return `You are a seasoned journalist and essayist writing for The Atlantic, Nature, or The New Yorker. Your prose is elegant, logically structured, and a pleasure to read.
 
-Write a coherent, engaging, publication-quality article of approximately ${length} words at ${levelDesc} level. The article must naturally incorporate ALL of the following vocabulary words:
+Write an article of approximately ${length} words at ${levelDesc} level. You MUST use ALL of these vocabulary words naturally in the text:
 
 ${wordList}
 
 ${topicLine}${multiNote}
 
-Requirements:
-1. The article must read like a genuine, well-crafted piece of writing — not a vocabulary exercise.
-2. Every target word must appear at least once in a context that makes its meaning clearly inferable.
-3. Wrap EACH target word with [[double brackets]] exactly as it appears in the text.
-4. Begin with a compelling title on the first line, then a blank line, then the article body.
-5. Use sophisticated sentence structures and varied vocabulary appropriate for the level.
-6. Maintain a consistent, engaging tone throughout.
+WRITING GUIDELINES:
+- OPEN with a compelling hook — an anecdote, a provocative question, or a striking fact.
+- STRUCTURE clearly: introduction → body (2-3 paragraphs with logical transitions) → a thoughtful conclusion that ties back to the opening.
+- FLOW naturally: each paragraph must connect to the next. Use transitions like "Yet...", "What this reveals is...", "Consider, for instance...", "This raises a deeper question..."
+- Avoid listing facts — weave them into a narrative with cause and effect, tension and resolution.
+- Every target word should feel organically placed. The reader should not notice they are vocabulary words.
+- Vary sentence length and rhythm. Mix short, punchy sentences with longer, more complex ones.
 
-Return ONLY the article text (title + body). No preamble, no explanation, no word count.`;
+TECHNICAL REQUIREMENTS:
+1. First line: a compelling title. Then one blank line. Then the article body.
+2. Wrap EVERY target word in [[double brackets]] — the exact word form that appears in the text.
+3. Return ONLY the article (title + body). No explanations, no word counts, no meta-commentary.`;
   },
 
   // ── Main entry point ───────────────────────────────────────────────────
