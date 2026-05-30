@@ -1443,6 +1443,23 @@ function bindEvents() {
     }
   });
 
+  // ── Log Out ──
+  $('btn-logout').addEventListener('click', () => {
+    if (!confirm('Log out? Your local data (words, progress) will be kept on this device, but cloud sync will stop.')) return;
+    // Clear account credentials
+    Storage.saveSettings({ syncId: '', syncPassphrase: '' });
+    // Clear VIP status
+    localStorage.removeItem('vm_vip_status');
+    closeSettings();
+    // Show login screen
+    VIP.startTrial();
+    updateVipUI();
+    updateSyncStatus();
+    updateArticleVipGate();
+    showLogin();
+    toast('Logged out — local data preserved', '');
+  });
+
   // Settings — Cloud Sync, Supabase key toggle
   $('btn-sync-now').addEventListener('click', async () => {
     if (vipRequired('Cloud sync')) return;
