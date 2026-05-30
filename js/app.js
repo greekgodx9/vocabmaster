@@ -202,6 +202,7 @@ function selectArticleWords(ids) {
 let currentArticleText = '';
 
 async function handleGenerateArticle() {
+  if (vipRequired('AI article generation')) return;
   const checked = [...document.querySelectorAll('.article-word-cb:checked')].map(cb => cb.value);
   if (!checked.length) { toast('Select at least one word', 'error'); return; }
 
@@ -925,6 +926,7 @@ function openSettings() {
   $('settings-sync-id').value         = s.syncId || '';
   $('settings-sync-passphrase').value = s.syncPassphrase || '';
   updateSyncStatus();
+  updateVipUI();
   updateProviderUI(p);
   $('settings-modal').classList.add('open');
 }
@@ -944,6 +946,43 @@ function saveSettings() {
   closeSettings();
   updateSyncStatus();
   toast('Settings saved ✓', 'success');
+}
+
+// ── VIP ────────────────────────────────────────────────────────────────────
+function updateVipUI() {
+  const badge = $('vip-badge');
+  const text  = $('vip-status-text');
+  const area  = $('vip-activate-area');
+  if (!badge || !text) return;
+
+  const active = VIP.isActive();
+  const days = VIP.daysLeft();
+
+  if (VIP.getStatus().active) {
+    badge.textContent = '⭐ VIP';
+    badge.style.background = '#fef3c7';
+    badge.style.color = '#92400e';
+    text.innerHTML = `VIP active until <strong>${VIP.getStatus().expiresAt}</strong> (${days} days).`;
+    if (area) area.style.display = 'none';
+  } else if (VIP.isTrialActive()) {
+    badge.textContent = 'Trial';
+    badge.style.background = '#fef3c7';
+    badge.style.color = '#92400e';
+    text.innerHTML = `<strong>${days} day${days>1?'s':''}</strong> free trial remaining. <a href="#" id="vip-show-activate" style="color:var(--primary)">Activate VIP →</a>`;
+    if (area) area.style.display = 'none';
+  } else {
+    badge.textContent = 'Expired';
+    badge.style.background = '#fee2e2';
+    badge.style.color = '#991b1b';
+    text.innerHTML = 'Free trial has expired. Activate VIP to unlock AI generation & cloud sync.';
+    if (area) area.style.display = '';
+  }
+}
+
+function vipRequired(feature) {
+  if (VIP.isActive()) return false;
+  toast(`&#128274; ${feature} requires VIP. Free trial: ${VIP.daysLeft()} day${VIP.daysLeft()>1?'s':''} left.`, 'error');
+  return true;
 }
 
 // ── SYNC HELPERS ──────────────────────────────────────────────────────────
@@ -966,6 +1005,7 @@ function updateSyncStatus() {
 // Silently push local changes to sync server (debounced)
 let _syncDebounceTimer = null;
 function syncInBackground() {
+  if (!VIP.isActive()) return;  // skip background sync if not VIP
   clearTimeout(_syncDebounceTimer);
   _syncDebounceTimer = setTimeout(async () => {
     try { await Sync.push(); } catch (err) { /* silent */ }
@@ -1320,8 +1360,39 @@ function bindEvents() {
     }
   }
 
+  // ── VIP Activation ──
+  $('btn-activate-vip').addEventListener('click', async () => {
+    const code = $('settings-vip-code').value.trim();
+    const username = $('settings-sync-id').value.trim();
+    if (!code) { toast('Enter an activation code', 'error'); return; }
+    if (!username) { toast('Set a Username in Account section first', 'error'); return; }
+    const btn = $('btn-activate-vip');
+    btn.disabled = true;
+    btn.textContent = 'Activating...';
+    try {
+      const result = await VIP.activate(code, username);
+      toast(`VIP activated! Expires ${result.expiresAt}`, 'success');
+      updateVipUI();
+      updateSyncStatus();
+    } catch (err) {
+      $('vip-activate-msg').textContent = err.message;
+      $('vip-activate-msg').style.color = '#ef4444';
+    }
+    btn.textContent = 'Activate VIP';
+    btn.disabled = false;
+  });
+
+  // Show activate area when clicking "Activate VIP →" link (during trial)
+  document.addEventListener('click', e => {
+    if (e.target.id === 'vip-show-activate') {
+      e.preventDefault();
+      $('vip-activate-area').style.display = '';
+    }
+  });
+
   // Settings — Cloud Sync, Supabase key toggle
   $('btn-sync-now').addEventListener('click', async () => {
+    if (vipRequired('Cloud sync')) return;
     const btn = $('btn-sync-now');
     const syncId = $('settings-sync-id').value.trim();
     const passphrase = $('settings-sync-passphrase').value.trim();
@@ -1392,6 +1463,14 @@ function init() {
 
   bindEvents();
   TTS.populateVoices($('tts-voice'));
+
+  // Start free trial on first visit
+  VIP.startTrial();
+  // Auto-verify VIP status if user has a username set
+  const s = Storage.getSettings();
+  if (s.syncId) {
+    VIP.verifyFromServer(s.syncId).then(() => updateVipUI());
+  }
 
   // Silently enrich words that have no definition in the background
   setTimeout(() => {
