@@ -1041,6 +1041,32 @@ function syncInBackground() {
 
 // ── EVENT BINDING ──────────────────────────────────────────────────────────
 function bindEvents() {
+  // ── Login overlay ──
+  const s = Storage.getSettings();
+  if (s.syncId && s.syncPassphrase) {
+    // Already has an account — skip login, verify VIP in background
+    hideLogin();
+    VIP.verifyFromServer(s.syncId).then(() => { updateVipUI(); updateSyncStatus(); });
+  } else {
+    // First visit — show login
+    showLogin();
+  }
+
+  // Login tab switching
+  document.querySelectorAll('.login-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      // "Register" and "Log In" both do the same thing — create or login with username+password
+    });
+  });
+
+  $('btn-login').addEventListener('click', handleLogin);
+  $('btn-guest').addEventListener('click', handleGuest);
+  // Allow Enter key to login
+  $('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  $('login-username').addEventListener('keydown', e => { if (e.key === 'Enter') $('login-password').focus(); });
+
   // ── Mobile hamburger menu ──
   const sidebar = document.querySelector('.sidebar');
   const backdrop = $('sidebar-backdrop');
@@ -1484,6 +1510,39 @@ async function handleFileImport(file) {
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+function showLogin() { $('login-overlay').classList.remove('hidden'); }
+function hideLogin() { $('login-overlay').classList.add('hidden'); }
+
+function handleLogin() {
+  const username = $('login-username').value.trim();
+  const password = $('login-password').value.trim();
+  const msg = $('login-msg');
+
+  if (!username || !password) { msg.textContent = 'Enter both username and password'; return; }
+  if (password.length < 3) { msg.textContent = 'Password must be at least 3 characters'; return; }
+
+  // Save credentials and login
+  Storage.saveSettings({ syncId: username, syncPassphrase: password });
+  VIP.startTrial();
+
+  // Verify VIP from server
+  VIP.verifyFromServer(username).then(() => {
+    updateVipUI();
+    updateSyncStatus();
+    updateArticleVipGate();
+  });
+
+  hideLogin();
+  toast(`Welcome, ${username}!`, 'success');
+}
+
+function handleGuest() {
+  VIP.startTrial();
+  hideLogin();
+  toast('Guest mode — 7 days free trial. Welcome!', 'success');
+}
+
 function init() {
   // Release daily words from word books before rendering
   const released = Storage.releaseWordsForToday();
@@ -1491,9 +1550,7 @@ function init() {
   bindEvents();
   TTS.populateVoices($('tts-voice'));
 
-  // Start free trial on first visit
-  VIP.startTrial();
-  // Auto-verify VIP status if user has a username set
+  // Auto-verify VIP status if returning user
   const s = Storage.getSettings();
   if (s.syncId) {
     VIP.verifyFromServer(s.syncId).then(() => updateVipUI());
