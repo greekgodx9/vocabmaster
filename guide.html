@@ -3,71 +3,242 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VocabMaster Guide</title>
+<title>VocabMaster 使用指南</title>
 <style>
-  :root { --primary: #4f46e5; --bg: #f8fafc; --text: #1e293b; --muted: #64748b; }
+  :root { --primary: #4f46e5; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; --radius: 12px; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
-  .container { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
-  h1 { font-size: 26px; color: var(--primary); margin-bottom: 4px; }
-  .sub { color: var(--muted); margin-bottom: 28px; }
-  h2 { font-size: 19px; color: var(--primary); margin: 28px 0 10px; }
-  p, li { color: #334155; }
-  ul, ol { padding-left: 20px; }
-  li { margin-bottom: 8px; }
-  code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
-  .tip { background: #eef2ff; border-left: 3px solid var(--primary); padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 14px; }
-  hr { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
-  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 40px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; padding-bottom: 80px; }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px 24px; }
+  .hero { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; text-align: center; padding: 48px 24px 36px; border-radius: 0 0 24px 24px; }
+  .hero h1 { font-size: 32px; margin-bottom: 8px; }
+  .hero p { opacity: .85; font-size: 17px; }
+  .hero .url { display: inline-block; margin-top: 16px; background: rgba(255,255,255,.15); padding: 10px 24px; border-radius: 24px; font-family: monospace; font-size: 15px; letter-spacing: .5px; word-break: break-all; }
+  section { margin-top: 36px; }
+  h2 { font-size: 22px; color: var(--primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 10px; }
+  h3 { font-size: 18px; margin: 20px 0 10px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); border: 1px solid var(--border); }
+  .card.tip { background: #eef2ff; border-color: #c7d2fe; }
+  .card.warn { background: #fffbeb; border-color: #fde68a; }
+  ol.steps { padding-left: 20px; }
+  ol.steps li { margin-bottom: 12px; }
+  ol.steps li strong { color: var(--primary); }
+  code { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 14px; font-family: 'SF Mono', 'Fira Code', monospace; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #f1f5f9; font-weight: 600; color: var(--primary); }
+  .screen { background: var(--border); border-radius: var(--radius); padding: 24px; text-align: center; color: var(--muted); font-size: 14px; margin: 12px 0; font-family: monospace; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .mark-new { background: #dbeafe; color: #1e40af; padding: 1px 6px; border-radius: 3px; }
+  .mark-due { background: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 3px; }
+  .mark-review { background: #dcfce7; color: #166534; padding: 1px 6px; border-radius: 3px; }
+  footer { text-align: center; padding: 40px 0 20px; color: var(--muted); font-size: 14px; }
+  @media print { body { font-size: 13px; padding: 0; } .hero { padding: 24px; border-radius: 0; } .container { max-width: 100%; padding: 0 16px; } h2 { font-size: 18px; } .card { break-inside: avoid; } }
 </style>
 </head>
 <body>
+
+<div class="hero">
+  <h1>&#128218; VocabMaster</h1>
+  <p>AI 驱动 &middot; 间隔重复 &middot; 跨设备同步</p>
+  <div class="url">vocabmaster5.netlify.app</div>
+</div>
+
 <div class="container">
 
-<h1>&#128218; VocabMaster</h1>
-<p class="sub">AI 驱动 &middot; 间隔重复 &middot; 跨设备同步</p>
+<section>
+  <h2>&#128640; 快速开始</h2>
+  <div class="card">
+    <h3>PC 端</h3>
+    <p>浏览器打开 <code>https://vocabmaster5.netlify.app</code> 即可使用。</p>
+  </div>
+  <div class="card">
+    <h3>&#128241; iPhone / iPad</h3>
+    <ol class="steps">
+      <li>用 <strong>Safari</strong>（必须是 Safari）打开 <code>vocabmaster5.netlify.app</code></li>
+      <li>点击底部 <strong>分享按钮</strong> &#11014;&#65039;</li>
+      <li>滑动找到 <strong>"Add to Home Screen"（添加到主屏幕）</strong></li>
+      <li>点击 <strong>"Add"</strong></li>
+      <li>桌面上出现 &#128218; <strong>VocabMaster</strong> 图标，像原生 App 一样使用</li>
+    </ol>
+    <p style="font-size:14px;color:var(--muted);margin-top:8px">&#128161; 添加到桌面后支持离线使用，不消耗流量。</p>
+  </div>
+</section>
 
-<h2>打开方式</h2>
-<p><strong>PC：</strong>浏览器打开 <code>vocabmaster5.netlify.app</code></p>
-<p><strong>iPhone：</strong>Safari 打开 &rarr; 分享 &rarr; 添加到主屏幕 &rarr; 像 App 一样使用</p>
+<section>
+  <h2>&#128221; 添加单词</h2>
+  <div class="card">
+    <h3>手动输入</h3>
+    <ol class="steps">
+      <li>左侧菜单 &rarr; <strong>"My Words"</strong></li>
+      <li>点击 <strong>"+ Add Words"</strong></li>
+      <li>每行一个单词，格式：<code>单词 : 释义</code></li>
+    </ol>
+    <div class="screen">
+      ephemeral : lasting for a very short time<br>
+      ubiquitous : present, appearing, or found everywhere<br>
+      sanction : (n.) official approval; (v.) to impose a penalty
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-top:8px">一行支持多个释义，用分号分隔：<code>bank : (n.) river bank; (n.) financial institution; (v.) to tilt</code></p>
+  </div>
+  <div class="card">
+    <h3>批量导入（CSV / Excel）</h3>
+    <ol class="steps">
+      <li>左侧菜单 &rarr; <strong>"Word Books"</strong></li>
+      <li>点击 <strong>"+ New Word Book"</strong></li>
+      <li>拖拽 CSV 或 Excel 文件到上传区域，或粘贴文本</li>
+      <li>设置每天释放多少词（如 20 个/天）</li>
+      <li>系统每天自动释放，节奏可控</li>
+    </ol>
+    <p style="font-size:14px;color:var(--muted)">&#128229; 可下载模板：在导入区域点击 "Download Template"</p>
+  </div>
+</section>
 
-<div class="tip">添加到桌面后可离线使用。不需要 VPN，不需要下载。</div>
+<section>
+  <h2>&#129302; AI 生成文章</h2>
+  <div class="card">
+    <p>将你学过的单词编成一篇<strong>真实的英文文章</strong>，在语境中自然而然地掌握。</p>
+    <ol class="steps">
+      <li>左侧菜单 &rarr; <strong>"Generate Article"</strong></li>
+      <li>勾选要包含的单词（可点 "Select All" / "Today's New" / "Due Today"）</li>
+      <li>选择 <strong>长度</strong>（200 / 300 / 500 / 700 词）和 <strong>难度</strong>：
+        <table style="margin-top:8px">
+          <tr><th>级别</th><th>适合</th></tr>
+          <tr><td>B1-B2 Intermediate</td><td>高中 / 大学基础，句子清晰易懂</td></tr>
+          <tr><td>CET-6</td><td>六级水平</td></tr>
+          <tr><td>IELTS 7-8</td><td>研究生 / 雅思</td></tr>
+          <tr><td>GRE / Academic</td><td>高阶学术英语</td></tr>
+        </table>
+      </li>
+      <li>可选：输入一个 <strong>主题</strong>（如 <code>climate change</code> 或 <code>space exploration</code>）</li>
+      <li>点击 <strong>"Generate Article"</strong></li>
+    </ol>
+    <p style="font-size:14px;color:var(--muted);margin-top:8px">&#9881;&#65039; 首次使用需在 Settings 中配置 AI API Key（推荐 DeepSeek，国内可用且便宜，见下文）。</p>
+  </div>
+  <div class="card">
+    <h3>文章阅读</h3>
+    <ul>
+      <li>目标单词被 <span class="mark-new">蓝色（新词）</span> / <span class="mark-due">黄色（待复习）</span> / <span class="mark-review">绿色（已掌握）</span> 标记</li>
+      <li><strong>点击</strong>标记单词 &rarr; 弹出详细释义和例句</li>
+      <li>点击页面空白处 &rarr; 弹窗消失</li>
+      <li>点击 <strong>&#128266; 按钮</strong> &rarr; 语音朗读全文</li>
+    </ul>
+  </div>
+</section>
 
-<h2>加单词</h2>
-<p><strong>My Words</strong> &rarr; + Add Words，每行一个：<code>单词 : 释义</code></p>
-<p><strong>批量：</strong>Word Books &rarr; + New Word Book &rarr; 拖入 CSV/Excel &rarr; 每天自动释放</p>
+<section>
+  <h2>&#128260; 间隔重复复习</h2>
+  <div class="card">
+    <p>基于 <strong>SM-2 算法</strong>（Anki 同款），在你快忘记时恰好提醒你。</p>
+    <ol class="steps">
+      <li>左侧菜单 &rarr; <strong>"Review"</strong></li>
+      <li>看到单词 &rarr; 在脑中回忆释义 &rarr; 点击翻面</li>
+      <li>根据记忆情况诚实评级：</li>
+    </ol>
+    <table>
+      <tr><th>评级</th><th>含义</th><th>下次复习</th></tr>
+      <tr><td>&#128308; Again</td><td>完全不记得</td><td>几小时后</td></tr>
+      <tr><td>&#128992; Hard</td><td>有点印象但不确定</td><td>几天后</td></tr>
+      <tr><td>&#128994; Good</td><td>想起来了</td><td>数周后</td></tr>
+      <tr><td>&#128311; Easy</td><td>非常熟悉，脱口而出</td><td>数月后</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>&#9999;&#65039; 拼写测试</h3>
+    <p>复习完成后可进入拼写模式：看释义 &rarr; 输入单词 &rarr; 检查拼写。</p>
+  </div>
+  <div class="card tip">
+    <strong>&#128293; 每日打卡：</strong>Dashboard 上点 "Check In"，Progress 页面查看连续打卡热力图。
+  </div>
+</section>
 
-<h2>AI 生成文章</h2>
-<ol>
-  <li>点 <strong>Generate Article</strong></li>
-  <li>勾选想包含的单词</li>
-  <li>可选填主题，选长度和难度</li>
-  <li>点 Generate &rarr; 单词在语境中高亮</li>
-  <li>点高亮词看释义，点 &#9654; 听朗读</li>
-</ol>
-<div class="tip">需要 AI API Key。Settings 里选 DeepSeek（国内可用），去 platform.deepseek.com 注册充值 10 元即可。</div>
+<section>
+  <h2>&#128100; 账号与同步</h2>
+  <div class="card">
+    <h3>&#9729;&#65039; 云同步 &#11088; 推荐</h3>
+    <p>PC 和 iPhone 自动保持数据一致。</p>
+    <ol class="steps">
+      <li>Settings &rarr; 找到 <strong>"&#128100; Account"</strong></li>
+      <li>设置一个 <strong>Username</strong>（如 <code>alex</code>）和 <strong>Password</strong></li>
+      <li>点击 <strong>"Log In & Sync"</strong></li>
+      <li>在另一台设备上：输入<strong>完全相同的 Username + Password</strong> &rarr; Log In & Sync</li>
+    </ol>
+    <p style="font-size:14px;color:var(--muted);margin-top:8px">&#9989; 登录后自动同步：加单词、复习、打卡后都会自动推送。无需手动操作。不同的人用不同的 Username，数据互不干扰。</p>
+  </div>
+  <div class="card">
+    <h3>&#128230; 本地传输（无需网络）</h3>
+    <table>
+      <tr><th>按钮</th><th>用途</th></tr>
+      <tr><td>&#128230; Copy All Data</td><td>复制全部数据 &rarr; 通过微信/QQ/AirDrop 发到另一台设备</td></tr>
+      <tr><td>&#128194; Import from File</td><td>接收方保存为 JSON 文件 &rarr; 点击导入</td></tr>
+      <tr><td>&#128248; Show QR Code</td><td>生成二维码 &rarr; 另一台相机扫描导入</td></tr>
+    </table>
+  </div>
+</section>
 
-<h2>复习</h2>
-<p><strong>Review</strong> &rarr; 看词想释义 &rarr; 翻面 &rarr; 按记忆情况评级（Again / Hard / Good / Easy）。系统自动安排下次复习时间。</p>
-<p>复习完可进入<strong>拼写测试</strong>。</p>
+<section>
+  <h2>&#9881;&#65039; 配置 AI API</h2>
+  <div class="card">
+    <p>VocabMaster 支持多家 AI 提供商。在国内推荐：</p>
+    <table>
+      <tr><th>提供商</th><th>国内访问</th><th>性价比</th><th>备注</th></tr>
+      <tr><td><strong>DeepSeek</strong></td><td>&#9989; 流畅</td><td>&#11088;&#11088;&#11088;</td><td>最推荐，便宜快速</td></tr>
+      <tr><td>豆包 Doubao</td><td>&#9989; 流畅</td><td>&#11088;&#11088;</td><td>字节跳动，火山方舟</td></tr>
+      <tr><td>通义千问 Qwen</td><td>&#9989; 流畅</td><td>&#11088;&#11088;</td><td>阿里云</td></tr>
+      <tr><td>智谱 GLM</td><td>&#9989; 流畅</td><td>&#11088;</td><td>免费额度多</td></tr>
+      <tr><td>Claude / OpenAI</td><td>&#10060; 需 VPN</td><td>—</td><td>效果最好但不便</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>以 DeepSeek 为例：</h3>
+    <ol class="steps">
+      <li>打开 <code>https://platform.deepseek.com</code> 注册</li>
+      <li>充值 <strong>10 元</strong>（够一个人用几个月）</li>
+      <li>API Keys &rarr; 创建 Key &rarr; 复制</li>
+      <li>VocabMaster &rarr; Settings &rarr; Provider 选 <strong>DeepSeek</strong> &rarr; 粘贴 API Key &rarr; Save</li>
+    </ol>
+  </div>
+</section>
 
-<h2>同步</h2>
-<p><strong>云同步：</strong>Settings &rarr; Account &rarr; 输入 Username + Password &rarr; Log In & Sync。两台设备用相同的账号密码，数据自动同步。</p>
-<p><strong>本地传输：</strong>Copy All Data &rarr; 微信发给另一台设备 &rarr; Import from File。</p>
+<section>
+  <h2>&#128202; 进度追踪</h2>
+  <div class="card">
+    <p>左侧菜单 &rarr; <strong>"Progress"</strong>：</p>
+    <ul>
+      <li><strong>学习状态分布：</strong>New / Learning / Young / Mature</li>
+      <li><strong>连续打卡天数</strong></li>
+      <li><strong>12 周热力图</strong>（像 GitHub 贡献图）</li>
+      <li><strong>即将复习列表</strong></li>
+    </ul>
+  </div>
+</section>
 
-<h2>进度</h2>
-<p><strong>Progress</strong> 页面查看学习状态分布、连续打卡天数、12 周热力图。</p>
-<p>Dashboard 点 <strong>Check In</strong> 记录每日打卡。</p>
-
-<hr>
-
-<h2>常见问题</h2>
-<p><strong>数据安全吗？</strong>数据存在本地浏览器，云同步加密隔离。API Key 只存你的设备。</p>
-<p><strong>能离线吗？</strong>添加到桌面后可离线复习。AI 生成文章和同步需要网络。</p>
-<p><strong>换设备？</strong>旧设备 Copy All Data &rarr; 新设备 Import from File，或用云同步账号登录。</p>
+<section>
+  <h2>&#10067; 常见问题</h2>
+  <div class="card">
+    <p><strong>Q: 数据安全吗？</strong><br>
+    A: 数据首先存在浏览器本地。云同步通过 Username + Password 加密隔离，不同人之间数据完全独立。API Key 永远只存你的设备。</p>
+  </div>
+  <div class="card">
+    <p><strong>Q: 可以离线使用吗？</strong><br>
+    A: 可以。添加到 iPhone 桌面后，复习、查词等核心功能完全离线。仅 AI 生成文章和云同步需要网络。</p>
+  </div>
+  <div class="card">
+    <p><strong>Q: 换设备了怎么办？</strong><br>
+    A: 在新设备 Settings &rarr; Account 输入原来的 Username + Password &rarr; Log In & Sync，数据自动拉取。或旧设备 Copy All Data &rarr; 新设备 Import from File。</p>
+  </div>
+  <div class="card">
+    <p><strong>Q: 如何备份？</strong><br>
+    A: 云同步已自动备份。也可定期 Settings &rarr; Copy All Data 手动保存。</p>
+  </div>
+  <div class="card warn">
+    <p><strong>&#9888;&#65039; 注意：</strong>iOS Safari 在存储空间紧张时可能清理浏览器数据。建议开启云同步以获得自动备份保护。</p>
+  </div>
+</section>
 
 <footer>
-  <code>vocabmaster5.netlify.app</code> &middot; 免费 &middot; 无需注册
+  <p>VocabMaster &middot; AI 驱动 &middot; 间隔重复 &middot; 完全免费</p>
+  <p style="margin-top:4px"><code>vocabmaster5.netlify.app</code></p>
 </footer>
 
 </div>
